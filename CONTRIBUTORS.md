@@ -121,3 +121,7 @@ This project exists because of your time, effort, and curiosity.
 - **Name:** Yuvaraj Ragothaman
 - **GitHub:** https://github.com/LevelSilence
 - **About:** Sophomore @IIITA
+
+- **Name:** Aman Sharma
+- **GitHub:** https://github.com/amansharma264
+- **About:** Third-year B.Tech student in ETE. Passionate about Backend development.
