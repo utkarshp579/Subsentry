@@ -104,3 +104,8 @@ This project exists because of your time, effort, and curiosity.
 - **Name:** Harshit Sethi  
 - **GitHub:** https://github.com/HarshitRSethi  
 - **About:** I'm a first-year IT undergrad at IIIT Allahabad, passionate about learning programming, web development, and exploring the world of AI. 
+
+- **Name:** Ashutosh kesarwani 
+- **GitHub:** https://github.com/Lucifer-0612 
+- **About:** I am 2nd year CSE student at Haldia Institute of Technology. I am here to learn about open source contributions. 
+
