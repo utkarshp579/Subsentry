@@ -68,7 +68,6 @@ This project exists because of your time, effort, and curiosity.
 - **Name:** Vinay Mohan
 - **GitHub:** https://github.com/vinay2047
 - **About:** Sophomore at IIITA interested in development.
-  
 - **Name:** Satwik Santosh
 - **GitHub:** https://github.com/DeadlySatwik
 - **About:** Sophomore at IIIT Allahabad (IIT2024084). Passionate about Cybersecurity, ML, and Full Stack Development, Competitive Programming."
@@ -89,8 +88,8 @@ This project exists because of your time, effort, and curiosity.
 - **GitHub:** https://github.com/AkshaTGA
 - **About:** Second-year B.Tech student in Computer Science. Passionate about Backend development :]
 
-- **Name:** Krishna Sikheriya  
-- **GitHub:** https://github.com/Krishna200608  
+- **Name:** Krishna Sikheriya
+- **GitHub:** https://github.com/Krishna200608
 - **About:** 3rd Year student at IIIT Allahabad eager to learn full-stack development and open-source contributions.
 
 - **Name:** Vrajkumar Shah
@@ -101,13 +100,13 @@ This project exists because of your time, effort, and curiosity.
 - **GitHub:** https://github.com/navdeep-r
 - **About:** sophomore jumpin into open source much deeper
 
-- **Name:** Harshit Sethi  
-- **GitHub:** https://github.com/HarshitRSethi  
-- **About:** I'm a first-year IT undergrad at IIIT Allahabad, passionate about learning programming, web development, and exploring the world of AI. 
+- **Name:** Harshit Sethi
+- **GitHub:** https://github.com/HarshitRSethi
+- **About:** I'm a first-year IT undergrad at IIIT Allahabad, passionate about learning programming, web development, and exploring the world of AI.
 
-- **Name:** Ashutosh kesarwani 
-- **GitHub:** https://github.com/Lucifer-0612 
-- **About:** I am 2nd year CSE student at Haldia Institute of Technology. I am here to learn about open source contributions. 
+- **Name:** Ashutosh kesarwani
+- **GitHub:** https://github.com/Lucifer-0612
+- **About:** I am 2nd year CSE student at Haldia Institute of Technology. I am here to learn about open source contributions.
 - **About:** I'm a first-year IT undergrad at IIIT Allahabad, passionate about learning programming, web development, and exploring the world of AI.
 
 - **Name:** Naman Pal
@@ -122,13 +121,13 @@ This project exists because of your time, effort, and curiosity.
 - **GitHub:** https://github.com/LevelSilence
 - **About:** Sophomore @IIITA
 
-- **Name:** Aiyaan Mahajan 
+- **Name:** Aiyaan Mahajan
 - **GitHub:** https://github.com/Aiyaan-Mahajan
 - **About:** Word Life 🤘🏻
 
 - **Name:** Yash Singh
 - **GitHub:** https://github.com/yash-singh12
-- **About:**  I am a backend focused full stack developer with a strong interest in building modern, user-friendly web applications. 
+- **About:** I am a backend focused full stack developer with a strong interest in building modern, user-friendly web applications.
 
 - **Name:** Lavay Garg
 - **GitHub:** https://github.com/lavaygarg
@@ -139,28 +138,31 @@ This project exists because of your time, effort, and curiosity.
 - **About:** Third-year B.Tech student in ETE. Passionate about Backend development.
 
 - **Name:** Sanchita Anil Agte
-- **GitHub:** https://github.com/san-dae 
+- **GitHub:** https://github.com/san-dae
 - **About:** chronically online, new to WebD
 
-- **Name:** Kamakshi Gupta  
-- **GitHub:** https://github.com/kamakshi-gupta  
+- **Name:** Kamakshi Gupta
+- **GitHub:** https://github.com/kamakshi-gupta
 - **About:** IT Sophomore at IIIT Allahabad, exploring open source and learn along the way.
 
 - **Name** Chauhan Devan
 - **Github** https://github.com/Devan019
 - **About:** Try to solve problems using my software skills :)
 
-- **Name:** Aarav Singh  
-- **GitHub:** https://github.com/aaravsingh-3  
+- **Name:** Aarav Singh
+- **GitHub:** https://github.com/aaravsingh-3
 - **About:** i am from iiita and i am here to learn about open source contributions.
-  
 - **Name:** Aarav Jain
-- **GitHub:** https://github.com/Aarav-Jain-official 
+- **GitHub:** https://github.com/Aarav-Jain-official
 - **About:** Second Year student at IIIT Kota , exploring web dev and building projects.
 
 - **Name:** Krish Sushil Kinger
 - **GitHub:** https://github.com/KRISHH-33
 - **About:** Mera naam Krish hai aur mujhe Coffee peena bohot pasand hai.
+
+- **Name:** Soham Agarwal
+- **GitHub:** https://github.com/SohamSDA
+- **About:** IT sophomore at IIIT Vadodara with a strong understanding of full-stack development. Passionate about learning through hands-on open-source contributions and collaborating on real-world projects.
 
 - **Name:** Mohan
 - **GitHub:** https://github.com/aricthecoder
