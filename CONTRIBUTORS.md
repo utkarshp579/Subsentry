@@ -161,3 +161,7 @@ This project exists because of your time, effort, and curiosity.
 - **Name:** Krish Sushil Kinger
 - **GitHub:** https://github.com/KRISHH-33
 - **About:** Mera naam Krish hai aur mujhe Coffee peena bohot pasand hai.
+
+- **Name:** Mohan
+- **GitHub:** https://github.com/aricthecoder
+- **About:** IT Sophomore at IIIT Allahabad
