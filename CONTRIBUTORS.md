@@ -199,6 +199,6 @@ This project exists because of your time, effort, and curiosity.
 - **GitHub** https://github.com/yogesh4216
 - **About** Computer Science–focused student passionate about AI, software development, and building impactful real world projects.
 
--**Name:** MANVI MISHRA
--**GitHub:** https://github.com/manvimishra15 
--**About:** I m a Btech cse 2nd year student, and I love creating,learning, exploring and connecting with likeminded individuals.
+- **Name:** MANVI MISHRA
+- **GitHub:** https://github.com/manvimishra15 
+- **About:** I m a Btech cse 2nd year student, and I love creating,learning, exploring and connecting with likeminded individuals.
