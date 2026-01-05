@@ -202,3 +202,7 @@ This project exists because of your time, effort, and curiosity.
 - **Name:** MANVI MISHRA
 - **GitHub:** https://github.com/manvimishra15 
 - **About:** I m a Btech cse 2nd year student, and I love creating,learning, exploring and connecting with likeminded individuals.
+
+- **Name:** Snehal Sanap  
+- **GitHub:** https://github.com/SnehalSanap0 
+- **About:** I am here to learn about open source contributions.
