@@ -24,6 +24,7 @@ import {
   getStatusColor,
   formatDate,
 } from '@/lib/utils';
+import { getServiceIcon, getServiceColors } from '@/lib/service-icons';
 
 // Mock data for demonstration
 const mockSubscriptions: Subscription[] = [
@@ -292,6 +293,12 @@ export default function Dashboard() {
                 const isUrgent = isUrgentRenewal(sub.renewalDate);
                 const categoryColors = getCategoryColor(sub.category);
                 const initials = sub.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+                
+                // Get service-specific icon and colors
+                const serviceIcon = getServiceIcon(sub.name);
+                const serviceColors = getServiceColors(sub.name);
+                const iconBg = serviceColors?.bg || categoryColors.bg;
+                const iconText = serviceColors?.text || categoryColors.text;
 
                 return (
                   <div 
@@ -303,10 +310,10 @@ export default function Dashboard() {
                   >
                     <div className={cn(
                       "w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0",
-                      categoryColors.bg,
-                      categoryColors.text
+                      iconBg,
+                      iconText
                     )}>
-                      {initials}
+                      {serviceIcon || initials}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
