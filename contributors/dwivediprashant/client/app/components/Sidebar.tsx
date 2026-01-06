@@ -1,53 +1,153 @@
-export default function Sidebar({ activePage }: { activePage: string }) {
-  const getActiveClass = (page: string) => {
-    if (page === activePage) {
-      return "bg-[#3B82F6]/20 text-[#3B82F6] hover:bg-[#3B82F6]/30";
-    }
-    return "text-[#FFFFFF] hover:bg-[#222222]";
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+
+interface SidebarProperties {
+  activePage: string;
+}
+
+export default function Sidebar({ activePage }: SidebarProperties) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const getActiveStateClasses = (currentPage: string) => {
+    const isActive = currentPage === activePage;
+    return isActive
+      ? "bg-[#3B82F6] text-white"
+      : "text-[#B3B3B3] hover:text-[#FFFFFF] hover:bg-[#282828]";
   };
 
+  const navigationItems = [
+    { name: "Dashboard", href: "/" },
+    { name: "Subscriptions", href: "/subscriptions" },
+    { name: "Renewals", href: "/renewals" },
+    { name: "Analytics", href: "/analytics" },
+  ];
+
+  const accountItems = [
+    { name: "Settings", href: "/settings" },
+    { name: "Profile", href: "/profile" },
+  ];
+
   return (
-    <aside className="w-64 bg-[#111111] border-r border-[#222222]">
-      <div className="p-6">
-        <div className="flex items-center gap-3 mb-8">
-          <img 
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGZhYUrmk6vDmi1-Pj7oI-HzTpQDCi9-IFTA&s" 
-            alt="Subsentry" 
-            className="w-8 h-8 rounded-lg object-cover"
-          />
-          <span className="text-xl font-semibold text-[#FFFFFF]">Subsentry</span>
+    <>
+      {/* Mobile backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`
+          fixed top-0 left-0 z-50 w-64 h-screen bg-[#191919] border-r border-[#2A2A2A]/50
+          transform transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          md:translate-x-0 md:static md:z-0
+        `}
+      >
+        {/* Logo Section */}
+        <div className="flex items-center justify-between h-16 px-6 border-b border-[#2A2A2A]/50">
+          <div className="flex items-center gap-3">
+            <img
+              src="/logo.png"
+              alt="Subsentry"
+              className="w-8 h-8 rounded-lg object-cover"
+            />
+            <span className="text-xl font-bold text-[#FFFFFF]">Subsentry</span>
+          </div>
+
+          {/* Mobile close button */}
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="md:hidden text-[#B3B3B3] hover:text-[#FFFFFF] p-2 transition-colors"
+          >
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
         </div>
-        
-        <nav className="space-y-1">
-          <a href="/" className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${getActiveClass('Dashboard')}`}>
-            <span className="font-medium">Dashboard</span>
-          </a>
-          
-          <a href="/subscriptions" className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${getActiveClass('Subscriptions')}`}>
-            <span className="font-medium">Subscriptions</span>
-          </a>
-          
-          <a href="/renewals" className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${getActiveClass('Renewals')}`}>
-            <span className="font-medium">Renewals</span>
-          </a>
-          
-          <a href="/analytics" className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${getActiveClass('Analytics')}`}>
-            <span className="font-medium">Analytics</span>
-          </a>
-          
-          <div className="border-t border-[#222222] my-4"></div>
-          
-          <div className="px-3 py-2 text-sm font-medium text-[#999999] uppercase tracking-wider">Account</div>
-          
-          <a href="/settings" className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${getActiveClass('Settings')}`}>
-            <span className="font-medium">Settings</span>
-          </a>
-          
-          <a href="/profile" className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${getActiveClass('Profile')}`}>
-            <span className="font-medium">Profile</span>
-          </a>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-4 py-6 space-y-2">
+          {navigationItems.map((item) => (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={`
+                flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium
+                transition-all duration-200 mb-1
+                ${getActiveStateClasses(item.name)}
+              `}
+              onClick={() => setSidebarOpen(false)}
+            >
+              <span>{item.name}</span>
+            </Link>
+          ))}
+
+          <div className="border-t border-[#2A2A2A]/50 pt-4 mt-6">
+            {accountItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`
+                  flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium
+                  transition-all duration-200 mb-1
+                  ${getActiveStateClasses(item.name)}
+                `}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <span>{item.name}</span>
+              </Link>
+            ))}
+          </div>
         </nav>
-      </div>
-    </aside>
+
+        {/* User Section */}
+        <div className="px-6 py-4 border-t border-[#2A2A2A]/50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#282828] rounded-full flex items-center justify-center border border-[#2A2A2A]">
+              <span className="text-[#B3B3B3] text-sm font-medium">U</span>
+            </div>
+            <div className="flex-1">
+              <div className="text-sm font-medium text-[#FFFFFF]">User</div>
+              <div className="text-xs text-[#B3B3B3]">user@example.com</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Mobile menu button */}
+      <button
+        onClick={() => setSidebarOpen(true)}
+        className="md:hidden fixed top-4 left-4 z-50 bg-[#191919] border border-[#2A2A2A]/50 rounded-lg p-3 text-[#B3B3B3] hover:text-[#FFFFFF] transition-colors shadow-lg"
+      >
+        <svg
+          className="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+        </svg>
+      </button>
+    </>
   );
 }

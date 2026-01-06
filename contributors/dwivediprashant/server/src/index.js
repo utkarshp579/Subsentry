@@ -16,10 +16,10 @@ app.use(express.json());
 //--subscription routes :----------
 app.use("/api/subscriptions", subscriptionRoutes);
 
-//--root route :----------
-app.get("/", (req, res) => {
-  res.send("Hello i am root route");
-});
+// //--root route :----------
+// app.get("/", (req, res) => {
+//   res.send("Hello i am root route");
+// });
 //---listen function
 app.listen(port, (req, res) => {
   console.log(`Server running at ${port}`);
