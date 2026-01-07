@@ -31,5 +31,36 @@ Week 3 is about turning the dashboard into a usable product interface. Compared 
 - The UI should call `/api/subscriptions` for listing.
 - The form should POST to `/api/subscriptions`.
 - Data should be scoped to the authenticated user.
+- Server auth accepts a `Bearer <token>` header; for local dev you may pass `x-user-id` to simulate a user.
+
+## ▶ Run Locally
+
+### Using pnpm
+
+```bash
+cd base_files/week3/client
+pnpm install --no-frozen-lockfile
+pnpm dev
+```
+
+### Using npm
+
+```bash
+cd base_files/week3/client
+npm install
+npm run dev
+```
 
 If you are implementing Week 3 issues, use this folder as the reference snapshot.
+
+---
+
+## 🤝 Credits (Merged PRs)
+
+| ✅ Issue | Focus Area | Contributors (PRs) |
+|---:|---|---|
+| **8** | Subscription Listing UI + Navbar | Krishna200608 (**#165**) |
+| **9** | Add Subscription Form UI | Krishna200608 (**#166**) |
+
+### 📝 Other Submissions (Pending/Not Merged)
+- Issue 9 (Form UI): dwivediprashant (**#168**) — pending review
