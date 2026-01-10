@@ -31,6 +31,8 @@ export async function getSubscriptions(token: string): Promise<SubscriptionRespo
   });
 
   if (!response.ok) {
+    const error = await response.text();
+    console.error('Get subscriptions error:', error);
     throw new Error('Failed to fetch subscriptions');
   }
 
@@ -51,6 +53,8 @@ export async function createSubscription(
   });
 
   if (!response.ok) {
+    const error = await response.text();
+    console.error('Create subscription error:', error);
     throw new Error('Failed to create subscription');
   }
 
@@ -62,8 +66,10 @@ export async function updateSubscription(
   id: string,
   data: Partial<Omit<Subscription, '_id' | 'userId' | 'createdAt' | 'updatedAt'>>
 ): Promise<{ message: string; subscription: Subscription }> {
+  console.log('Updating subscription:', id, data);
+  
   const response = await fetch(`${API_BASE_URL}/api/subscriptions/${id}`, {
-    method: 'PUT',
+    method: 'PATCH', // ✅ Using PATCH
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
@@ -72,7 +78,15 @@ export async function updateSubscription(
   });
 
   if (!response.ok) {
-    throw new Error('Failed to update subscription');
+    const errorText = await response.text();
+    console.error('Update subscription error:', response.status, errorText);
+    
+    try {
+      const errorJson = JSON.parse(errorText);
+      throw new Error(errorJson.message || errorJson.error || 'Failed to update subscription');
+    } catch {
+      throw new Error(`Failed to update subscription: ${response.status} ${response.statusText}`);
+    }
   }
 
   return response.json();
@@ -91,6 +105,8 @@ export async function deleteSubscription(
   });
 
   if (!response.ok) {
+    const error = await response.text();
+    console.error('Delete subscription error:', error);
     throw new Error('Failed to delete subscription');
   }
 

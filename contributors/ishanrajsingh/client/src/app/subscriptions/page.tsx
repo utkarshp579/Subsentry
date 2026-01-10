@@ -20,7 +20,6 @@ import {
   SortField,
   SortOrder,
 } from '../components/subscriptions';
-// Import RENAMED components
 import UpdateSubscriptionModal from '../components/subscriptions/UpdateSubscriptionModal';
 import RemoveSubscriptionDialog from '../components/subscriptions/RemoveSubscriptionDialog';
 import { Subscription, getSubscriptions, updateSubscription, deleteSubscription } from '@/lib/api';
@@ -160,38 +159,53 @@ export default function SubscriptionsPage() {
 
   // Handle edit subscription - ADAPTED for UpdateSubscriptionModal
   const handleEditSubscription = async (id: string, data: Partial<Subscription>) => {
-    const token = await getToken();
-    if (!token) throw new Error('Authentication required');
+    try {
+      const token = await getToken();
+      if (!token) {
+        throw new Error('Authentication required');
+      }
 
-    const result = await updateSubscription(token, id, data);
+      console.log('Editing subscription:', id, data); // Debug log
+      const result = await updateSubscription(token, id, data);
 
-    // Update local state immediately
-    setSubscriptions((prev) =>
-      prev.map((sub) => (sub._id === id ? result.subscription : sub))
-    );
+      // Update local state - USE _id NOT id
+      setSubscriptions((prev) =>
+        prev.map((sub) => (sub._id === id ? result.subscription : sub))
+      );
 
-    toast.success('Subscription updated', {
-      description: `${result.subscription.name} has been updated successfully.`,
-    });
+      toast.success('Subscription updated', {
+        description: `${result.subscription.name} has been updated successfully.`,
+      });
+    } catch (error) {
+      console.error('Update error:', error);
+      throw error; // Re-throw so modal can handle it
+    }
   };
 
-  // Handle delete subscription - ADAPTED for RemoveSubscriptionDialog
+  // Handle delete subscription - FIX THE ID FIELD
   const handleDeleteSubscription = async (id: string) => {
-    const token = await getToken();
-    if (!token) throw new Error('Authentication required');
+    try {
+      const token = await getToken();
+      if (!token) {
+        throw new Error('Authentication required');
+      }
 
-    // Get subscription name before deleting
-    const subscription = subscriptions.find((s) => s._id === id);
-    const subName = subscription?.name || 'Subscription';
+      // Get subscription name before deleting
+      const subscription = subscriptions.find((s) => s._id === id);
+      const subName = subscription?.name || 'Subscription';
 
-    await deleteSubscription(token, id);
+      await deleteSubscription(token, id);
 
-    // Remove from local state immediately
-    setSubscriptions((prev) => prev.filter((sub) => sub._id !== id));
+      // Remove from local state - USE _id NOT id
+      setSubscriptions((prev) => prev.filter((sub) => sub._id !== id));
 
-    toast.success('Subscription deleted', {
-      description: `${subName} has been permanently removed.`,
-    });
+      toast.success('Subscription deleted', {
+        description: `${subName} has been permanently removed.`,
+      });
+    } catch (error) {
+      console.error('Delete error:', error);
+      throw error;
+    }
   };
 
   return (
