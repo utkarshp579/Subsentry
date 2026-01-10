@@ -5,6 +5,8 @@ import AppLayout from "./components/AppLayout";
 import { SubscriptionData } from "./subscriptions/page";
 import Modal from "./components/Modal";
 import SubscriptionForm from "./components/SubscriptionForm";
+import EditSubscriptionForm from "./components/EditSubscriptionForm";
+import DeleteConfirmationDialog from "./components/DeleteConfirmationDialog";
 
 export default function Dashboard() {
   const [subscriptionList, setSubscriptionList] = useState<SubscriptionData[]>(
@@ -12,6 +14,13 @@ export default function Dashboard() {
   );
   const [loadingState, setLoadingState] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingSubscription, setEditingSubscription] =
+    useState<SubscriptionData | null>(null);
+  const [deletingSubscription, setDeletingSubscription] =
+    useState<SubscriptionData | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
 
   useEffect(() => {
     fetchSubscriptionData();
@@ -66,10 +75,85 @@ export default function Dashboard() {
     fetchSubscriptionData();
   };
 
+  const handleEditSuccess = () => {
+    setIsEditModalOpen(false);
+    setEditingSubscription(null);
+    fetchSubscriptionData();
+  };
+
+  const handleEditCancel = () => {
+    setIsEditModalOpen(false);
+    setEditingSubscription(null);
+  };
+
+  const handleEdit = (subscription: SubscriptionData) => {
+    setEditingSubscription(subscription);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDelete = (subscription: SubscriptionData) => {
+    setDeletingSubscription(subscription);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingSubscription) return;
+
+    try {
+      const response = await fetch(
+        `/api/subscriptions/${deletingSubscription._id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete subscription");
+      }
+
+      setIsDeleteDialogOpen(false);
+      setDeleteSuccess(true);
+      setDeletingSubscription(null);
+      fetchSubscriptionData();
+
+      // Hide success message after 2 seconds
+      setTimeout(() => {
+        setDeleteSuccess(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Error deleting subscription:", error);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteDialogOpen(false);
+    setDeletingSubscription(null);
+  };
+
   const stats = calculateStats();
 
   return (
     <AppLayout activePage="Dashboard">
+      {/* Delete Success Message */}
+      {deleteSuccess && (
+        <div className="mb-6 p-4 bg-[#16A34A] text-white rounded-lg">
+          <div className="flex items-center">
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Subscription deleted successfully!
+          </div>
+        </div>
+      )}
+
       {/* Header Section */}
       <div className="mb-8 flex items-center justify-between">
         <div>
@@ -172,6 +256,29 @@ export default function Dashboard() {
       >
         <SubscriptionForm onSuccess={handleFormSuccess} />
       </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={handleEditCancel}
+        title="Edit Subscription"
+      >
+        {editingSubscription && (
+          <EditSubscriptionForm
+            subscription={editingSubscription}
+            onSuccess={handleEditSuccess}
+            onCancel={handleEditCancel}
+          />
+        )}
+      </Modal>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        subscription={deletingSubscription!}
+        isOpen={isDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
     </AppLayout>
   );
 }

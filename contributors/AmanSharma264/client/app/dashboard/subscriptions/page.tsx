@@ -13,6 +13,7 @@ import {
   Calendar,
   TrendingUp,
 } from "lucide-react";
+import AddSubscriptionDrawer from "@/app/components/subscriptions/AddSubscriptionDrawer";
 
 const SubscriptionDashboard = () => {
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
@@ -272,12 +273,7 @@ const SubscriptionDashboard = () => {
         : "Start by adding your first subscription"}
     </p>
 
-    <button
-      onClick={() => alert("Add Subscription coming soon")}
-      className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
-    >
-      Add Subscription
-    </button>
+    <AddSubscriptionDrawer />
   </div>
 ) : (
   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">

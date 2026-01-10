@@ -11,6 +11,13 @@ export const subscriptionCategories = {
 export const subscriptionReference = {
     Manual: "manual",
     Gmail: "gmail",
+    UPI: "upi",           
+    PayPal: "paypal",     
+    DebitCard: "Debit Card", 
+    CreditCard: "Credit Card",   
+    Other: "Other",
+    PayPal: "PayPal",
+    Bank: "Bank",
 };
 
 export const subscriptionStatus = {

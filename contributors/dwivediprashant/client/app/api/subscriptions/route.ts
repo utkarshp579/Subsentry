@@ -21,6 +21,7 @@ export async function GET() {
 
     // Transform backend data to match frontend interface
     const transformedSubscriptions = subscriptions.map((sub: any) => ({
+      _id: sub._id || sub.id,
       identifier: sub._id || sub.id,
       serviceName: sub.name,
       cost: sub.amount,

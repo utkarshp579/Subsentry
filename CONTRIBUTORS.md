@@ -89,6 +89,13 @@ Copy-paste this row at the **end of the table** and fill your details:
   **GitHub:** https://github.com/Dharshin1  
   **About:** Computer science student interested in backend development and open-source contributions.
 
+
+- **Name:** Ishan Chadha  
+  **GitHub:** https://github.com/IshanChad  
+  **About:** Computer science student interested in backend development and open-source contributions.
+
+
+
 ---
 
 ## 🧩 Notes
