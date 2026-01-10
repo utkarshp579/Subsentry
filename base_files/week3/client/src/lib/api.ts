@@ -56,3 +56,47 @@ export async function createSubscription(
 
   return response.json();
 }
+
+export async function updateSubscription(
+  token: string,
+  id: string,
+  data: Partial<Omit<Subscription, '_id' | 'userId' | 'createdAt' | 'updatedAt'>>
+): Promise<{ message: string; subscription: Subscription }> {
+  const response = await fetch(`${API_BASE_URL}/api/subscriptions/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('Update subscription error:', error);
+    throw new Error('Failed to update subscription');
+  }
+
+  return response.json();
+}
+
+export async function deleteSubscription(
+  token: string,
+  id: string
+): Promise<{ message: string }> {
+  const response = await fetch(`${API_BASE_URL}/api/subscriptions/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('Delete subscription error:', error);
+    throw new Error('Failed to delete subscription');
+  }
+
+  return response.json();
+}

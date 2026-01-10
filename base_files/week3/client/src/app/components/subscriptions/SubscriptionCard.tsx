@@ -42,9 +42,17 @@ interface SubscriptionCardProps {
   subscription: Subscription;
   view?: 'grid' | 'list';
   index?: number;
+  onEdit?: (subscription: Subscription) => void;
+  onDelete?: (subscription: Subscription) => void;
 }
 
-export default function SubscriptionCard({ subscription, view = 'grid', index = 0 }: SubscriptionCardProps) {
+export default function SubscriptionCard({
+  subscription,
+  view = 'grid',
+  index = 0,
+  onEdit,
+  onDelete,
+}: SubscriptionCardProps) {
   const daysUntil = getDaysUntilRenewal(subscription.renewalDate);
   const isUrgent = isUrgentRenewal(subscription.renewalDate);
   const categoryColors = getCategoryColor(subscription.category);
@@ -166,7 +174,7 @@ export default function SubscriptionCard({ subscription, view = 'grid', index = 
               </motion.button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuItem className="gap-2">
+              <DropdownMenuItem className="gap-2" onClick={() => onEdit?.(subscription)}>
                 <Edit className="w-4 h-4" /> Edit
               </DropdownMenuItem>
               <DropdownMenuItem className="gap-2">
@@ -176,7 +184,10 @@ export default function SubscriptionCard({ subscription, view = 'grid', index = 
                 <ExternalLink className="w-4 h-4" /> Visit Site
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="gap-2 text-red-400 focus:text-red-400">
+              <DropdownMenuItem
+                className="gap-2 text-red-400 focus:text-red-400"
+                onClick={() => onDelete?.(subscription)}
+              >
                 <Trash2 className="w-4 h-4" /> Cancel
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -244,7 +255,7 @@ export default function SubscriptionCard({ subscription, view = 'grid', index = 
                 </motion.button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-40">
-                <DropdownMenuItem className="gap-2">
+                <DropdownMenuItem className="gap-2" onClick={() => onEdit?.(subscription)}>
                   <Edit className="w-4 h-4" /> Edit
                 </DropdownMenuItem>
                 <DropdownMenuItem className="gap-2">
@@ -254,7 +265,10 @@ export default function SubscriptionCard({ subscription, view = 'grid', index = 
                   <ExternalLink className="w-4 h-4" /> Visit Site
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="gap-2 text-red-400 focus:text-red-400">
+                <DropdownMenuItem
+                  className="gap-2 text-red-400 focus:text-red-400"
+                  onClick={() => onDelete?.(subscription)}
+                >
                   <Trash2 className="w-4 h-4" /> Cancel
                 </DropdownMenuItem>
               </DropdownMenuContent>

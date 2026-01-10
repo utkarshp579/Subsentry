@@ -18,8 +18,10 @@ import {
   FilterCategory,
   SortField,
   SortOrder,
+  UpdateSubscriptionModal,
+  RemoveSubscriptionDialog,
 } from '../components/subscriptions';
-import { Subscription, getSubscriptions } from '@/lib/api';
+import { Subscription, getSubscriptions, updateSubscription, deleteSubscription } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ShimmerButton } from '@/components/ui/aceternity';
@@ -41,6 +43,10 @@ export default function SubscriptionsPage() {
   // Sort state
   const [sortField, setSortField] = useState<SortField>('renewalDate');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+
+  // Edit/Delete modal state
+  const [editingSubscription, setEditingSubscription] = useState<Subscription | null>(null);
+  const [deletingSubscription, setDeletingSubscription] = useState<Subscription | null>(null);
 
   // Fetch subscriptions from real API
   useEffect(() => {
@@ -134,6 +140,28 @@ export default function SubscriptionsPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleEditSubscription = async (id: string, data: Partial<Subscription>) => {
+    const token = await getToken();
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
+    const result = await updateSubscription(token, id, data);
+    setSubscriptions((prev) =>
+      prev.map((sub) => (sub._id === id ? result.subscription : sub))
+    );
+  };
+
+  const handleDeleteSubscription = async (id: string) => {
+    const token = await getToken();
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
+    await deleteSubscription(token, id);
+    setSubscriptions((prev) => prev.filter((sub) => sub._id !== id));
   };
 
   return (
@@ -244,12 +272,30 @@ export default function SubscriptionsPage() {
                   subscription={subscription}
                   view={view}
                   index={index}
+                  onEdit={() => setEditingSubscription(subscription)}
+                  onDelete={() => setDeletingSubscription(subscription)}
                 />
               ))}
             </AnimatePresence>
           </motion.div>
         </>
       )}
+
+      <UpdateSubscriptionModal
+        subscriptionData={editingSubscription}
+        visible={!!editingSubscription}
+        onDismiss={() => setEditingSubscription(null)}
+        onUpdate={handleEditSubscription}
+      />
+
+      <RemoveSubscriptionDialog
+        subscriptionData={deletingSubscription}
+        open={!!deletingSubscription}
+        onOpenChange={(open) => {
+          if (!open) setDeletingSubscription(null);
+        }}
+        onRemove={handleDeleteSubscription}
+      />
     </DashboardLayout>
   );
 }
