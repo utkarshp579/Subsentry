@@ -91,24 +91,6 @@ Copy-paste this row at the **end of the table** and fill your details:
 | <img src="https://github.com/Siddharthjagtap336.png?size=80" width="48" alt="Siddharthjagtap336 avatar"> | **Siddharth Jagtap** | A CSE student interested in backend development and open-source contributions. | [@Siddharthjagtap336](https://github.com/Siddharthjagtap336) |
 | <img src="https://github.com/AakritiSingh05.png?size=80" width="48" alt="AakritiSingh05 avatar"> | **Aakriti Singh** | CSE student and frontend developer who loves crafting bold, eye-catching, and interactive websites. | [@AakritiSingh05](https://github.com/AakritiSingh05) |
 
-- **Name:** Dharshini  
-- **GitHub:** https://github.com/Dharshin1  
-- **About:** Computer science student interested in backend development and open-source contributions.
-
-
-- **Name:** Ishan Chadha  
-- **GitHub:** https://github.com/IshanChad  
-- **About:** Computer science student interested in backend development and open-source contributions.
-
-
-- **Name:** Siddharth Jagtap
-- **GitHub:** https://github.com/Siddharthjagtap336  
-- **About:** A CSE student interested in backend development and open-source contributions.
-   
-- **Name:** Aakriti Singh  
-- **GitHub:** https://github.com/AakritiSingh05
-- **About:** CSE student and frontend developer who loves crafting bold, eye-catching, and interactive websites.
-
 ---
 
 ## 🧩 Notes
