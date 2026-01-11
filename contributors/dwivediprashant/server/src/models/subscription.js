@@ -1,11 +1,7 @@
-const mongoose=require("mongoose")
+const mongoose = require("mongoose");
 
 const subscriptionSchema = new mongoose.Schema(
   {
-    userId: {
-      type: String,
-      required: true,
-    },
     name: {
       type: String,
       required: true,
@@ -16,7 +12,7 @@ const subscriptionSchema = new mongoose.Schema(
     },
     billingCycle: {
       type: String,
-      enum: ['monthly', 'yearly'],
+      enum: ["monthly", "yearly"],
       required: true,
     },
     renewalDate: {
@@ -29,13 +25,30 @@ const subscriptionSchema = new mongoose.Schema(
     },
     source: {
       type: String,
-      enum: ['manual', 'email'],
-      default: 'manual',
+      enum: ["manual", "email"],
+      default: "manual",
+    },
+    category: {
+      type: String,
+      required: true,
+      enum: [
+        "entertainment",
+        "productivity",
+        "utilities",
+        "education",
+        "health",
+        "finance",
+        "other",
+      ],
+    },
+    notes: {
+      type: String,
+      default: "",
     },
   },
   { timestamps: true }
 );
 
-const Subscription = mongoose.model('Subscription', subscriptionSchema);
+const Subscription = mongoose.model("Subscription", subscriptionSchema);
 
 module.exports = Subscription;

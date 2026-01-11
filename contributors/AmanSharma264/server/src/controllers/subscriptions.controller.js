@@ -1,7 +1,8 @@
 import Subscription from "../models/subscription.model.js";
 
 export const createSubscription = async(req, res) => {
-    const userId = req.auth?.userId;
+    // const userId = req.auth?.userId;
+    const userId = "test-user";
     if(!userId){
         return res
         .status(401)
@@ -73,16 +74,16 @@ export const createSubscription = async(req, res) => {
 };
 
 export const getSubscription = async(req, res) =>{
-    const userId = req.auth?.userId;
-    if(!userId){
-        return res.status(401).json({
-            success: false,
-            message: "Unauthorized",
-        });
-    }
+    // const userId = req.auth?.userId;
+    // if(!userId){
+    //     return res.status(401).json({
+    //         success: false,
+    //         message: "Unauthorized",
+    //     });
+    // }
 
     try {
-        const subscription = await Subscription.find({userId})
+        const subscription = await Subscription.find()
         .sort({createdAt: -1})
         .lean();
         return res.status(200).json({

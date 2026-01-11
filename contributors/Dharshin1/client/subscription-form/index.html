@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Subscription Form</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="form-container">
+    <h2>Add Subscription</h2>
+    <form id="subscriptionForm" novalidate>
+      <label>Name <span class="required">*</span></label>
+      <input type="text" id="name" required>
+
+      <label>Amount ($) <span class="required">*</span></label>
+      <input type="number" id="amount" min="0" required>
+
+      <label>Billing Cycle <span class="required">*</span></label>
+      <select id="billingCycle" required>
+        <option value="">Select</option>
+        <option value="monthly">Monthly</option>
+        <option value="quarterly">Quarterly</option>
+        <option value="yearly">Yearly</option>
+      </select>
+
+      <label>Renewal Date <span class="required">*</span></label>
+      <input type="date" id="renewalDate" required>
+
+      <label>Category <span class="required">*</span></label>
+      <input type="text" id="category" required>
+
+      <label>Trial</label>
+      <input type="checkbox" id="trial">
+
+      <label>Source <span class="required">*</span></label>
+      <input type="text" id="source" required>
+
+      <label>Notes / Description</label>
+      <textarea id="notes"></textarea>
+
+      <button type="submit">Add Subscription</button>
+      <p id="feedback"></p>
+    </form>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

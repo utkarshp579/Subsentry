@@ -1,23 +1,43 @@
-const mongoose=require("mongoose")
+import { Schema, model } from 'mongoose';
+import {
+  BILLING_CYCLES,
+  SUBSCRIPTION_CATEGORIES,
+  SUBSCRIPTION_SOURCES,
+  SUBSCRIPTION_STATUS,
+  DEFAULT_CURRENCY,
+} from '../constants/subscription.constants.js';
 
-const subscriptionSchema = new mongoose.Schema(
+const subscriptionSchema = new Schema(
   {
     userId: {
       type: String,
       required: true,
+      index: true,
     },
     name: {
       type: String,
       required: true,
+      trim: true,
     },
     amount: {
       type: Number,
       required: true,
+      min: 0,
+    },
+    currency: {
+      type: String,
+      default: DEFAULT_CURRENCY,
+      uppercase: true,
     },
     billingCycle: {
       type: String,
-      enum: ['monthly', 'yearly'],
+      enum: Object.values(BILLING_CYCLES),
       required: true,
+    },
+    category: {
+      type: String,
+      enum: Object.values(SUBSCRIPTION_CATEGORIES),
+      default: SUBSCRIPTION_CATEGORIES.OTHER,
     },
     renewalDate: {
       type: Date,
@@ -27,15 +47,21 @@ const subscriptionSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    trialEndsAt: {
+      type: Date,
+    },
     source: {
       type: String,
-      enum: ['manual', 'email'],
-      default: 'manual',
+      enum: Object.values(SUBSCRIPTION_SOURCES),
+      default: SUBSCRIPTION_SOURCES.MANUAL,
+    },
+    status: {
+      type: String,
+      enum: Object.values(SUBSCRIPTION_STATUS),
+      default: SUBSCRIPTION_STATUS.ACTIVE,
     },
   },
   { timestamps: true }
 );
 
-const Subscription = mongoose.model('Subscription', subscriptionSchema);
-
-module.exports = Subscription;
+export const Subscription = model('Subscription', subscriptionSchema);

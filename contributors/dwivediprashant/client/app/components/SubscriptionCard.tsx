@@ -1,13 +1,19 @@
 import { SubscriptionData } from "../subscriptions/page";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 interface SubscriptionCardProperties {
   subscription: SubscriptionData;
   isUrgent: boolean;
+  onEdit: (subscription: SubscriptionData) => void;
+  onDelete: (subscription: SubscriptionData) => void;
 }
 
 export default function SubscriptionCard({
   subscription,
   isUrgent,
+  onEdit,
+  onDelete,
 }: SubscriptionCardProperties) {
   const getStatusBadge = () => {
     switch (subscription.serviceStatus) {
@@ -177,9 +183,22 @@ export default function SubscriptionCard({
             via {subscription.integrationSource}
           </span>
         </div>
-        <button className="text-[#3B82F6] hover:text-[#60A5FA] text-sm font-medium transition-colors">
-          Manage →
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onEdit(subscription)}
+            className="text-[#3B82F6] hover:text-[#60A5FA] p-2 rounded-lg hover:bg-[#3B82F6]/10 transition-all duration-200"
+            title="Edit Subscription"
+          >
+            <FontAwesomeIcon icon={faEdit} className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => onDelete(subscription)}
+            className="text-[#EF4444] hover:text-[#F87171] p-2 rounded-lg hover:bg-[#EF4444]/10 transition-all duration-200"
+            title="Delete Subscription"
+          >
+            <FontAwesomeIcon icon={faTrash} className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );
