@@ -178,3 +178,7 @@ This project exists because of your time, effort, and curiosity.
 - **Name:** Tejinerpal Singh
 - **GitHub:** https://github.com/Tejinder105
 - **About:** CSE sophomore at IIIT Vadoara
+
+- **Name:** Deepali Kumari  
+- **GitHub:** https://github.com/deepali-kumari-iitp  
+- **About:** B.Sc CS & Data Analytics student at IIT Patna, interested in web development and open source.
