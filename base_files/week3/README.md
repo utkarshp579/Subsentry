@@ -68,8 +68,8 @@ If you are implementing Week 3 issues, use this folder as the reference snapshot
 
 | ✅ Issue | Focus Area | Contributors (PRs) |
 |---:|---|---|
-| **8** | Subscription Listing UI + Navbar | Krishna200608 (**#165**) |
-| **9** | Add Subscription Form UI | Krishna200608 (**#166**) |
+| **8** | Subscription Listing UI + Navbar | Krishna200608 (**#165**) , dwivediprashant|
+| **9** | Add Subscription Form UI | Krishna200608 (**#166**) ,dwivediprashant|
 | **10** | Edit & Delete Subscriptions | ishanrajsingh (**#181**) |
 
 ### 📝 Other Submissions (Pending/Not Merged)
