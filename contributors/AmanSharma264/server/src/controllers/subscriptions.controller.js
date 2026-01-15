@@ -1,5 +1,5 @@
 import Subscription from "../models/subscription.model.js";
-
+import { monthlySpend } from "../services/subscriptionMetrics.js";
 export const createSubscription = async(req, res) => {
     // const userId = req.auth?.userId;
     const userId = "test-user";
@@ -74,22 +74,19 @@ export const createSubscription = async(req, res) => {
 };
 
 export const getSubscription = async(req, res) =>{
-    // const userId = req.auth?.userId;
-    // if(!userId){
-    //     return res.status(401).json({
-    //         success: false,
-    //         message: "Unauthorized",
-    //     });
-    // }
-
+    
     try {
         const subscription = await Subscription.find()
         .sort({createdAt: -1})
         .lean();
+        const monthlySpending = monthlySpend(subscription);
         return res.status(200).json({
             success: true,
             count: subscription.length,
             data: subscription,
+            meta: {
+                monthlySpending: Number(monthlySpending.toFixed(2)),
+            },
         });
     } catch (error) {
         console.log("Fetch subscription error:", error);
