@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import SummaryWidgets from './SummaryWidgets';
+import UpcomingRenewals from './UpcomingRenewals';
 import { useAuth } from '@clerk/nextjs';
 import Link from 'next/link';
 import DashboardLayout from '../components/DashboardLayout';
@@ -199,8 +200,12 @@ export default function Dashboard() {
         </div>
       </div>
 
+
       {/* Dashboard Summary Widgets */}
       <SummaryWidgets />
+
+      {/* Upcoming Renewals Section */}
+      <UpcomingRenewals subscriptions={subscriptions} />
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
