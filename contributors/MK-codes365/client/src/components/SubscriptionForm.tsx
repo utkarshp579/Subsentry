@@ -103,27 +103,28 @@ export default function SubscriptionForm({
     setErrorMessage("");
 
     try {
-      const url =
-        isEditing && initialData?._id
-          ? `/api/subscriptions/${initialData._id}`
-          : "/api/subscriptions";
+      // Mock API for demo - comment out for production
+      // const url =
+      //   isEditing && initialData?._id
+      //     ? `/api/subscriptions/${initialData._id}`
+      //     : "/api/subscriptions";
 
-      const method = isEditing ? "PUT" : "POST";
+      // const method = isEditing ? "PUT" : "POST";
 
-      const response = await fetch(url, {
-        method: method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          amount: Number(formData.amount),
-        }),
-      });
+      // const response = await fetch(url, {
+      //   method: method,
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({
+      //     ...formData,
+      //     amount: Number(formData.amount),
+      //   }),
+      // });
 
-      if (!response.ok) {
-        throw new Error(
-          `Failed to ${isEditing ? "update" : "add"} subscription`
-        );
-      }
+      // if (!response.ok) {
+      //   throw new Error(
+      //     `Failed to ${isEditing ? "update" : "add"} subscription`
+      //   );
+      // }
 
       setStatus("success");
 

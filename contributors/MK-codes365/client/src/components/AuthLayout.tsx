@@ -1,14 +1,14 @@
 import React from "react";
 
-interface AuthLayoutProps {
+export default function AuthLayout({
+  children,
+  type,
+}: {
   children: React.ReactNode;
   type: "sign-in" | "sign-up";
-}
-
-export default function AuthLayout({ children, type }: AuthLayoutProps) {
+}) {
   return (
     <div className="flex min-h-screen bg-white dark:bg-gray-950">
-      {/* Left Column: Auth Forms */}
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div className="mb-10 flex items-center gap-2">
@@ -89,7 +89,6 @@ export default function AuthLayout({ children, type }: AuthLayoutProps) {
         </div>
       </div>
 
-      {/* Right Column: Visual Marketing Section */}
       <div className="relative hidden w-0 flex-1 lg:block">
         <div className="absolute inset-0 h-full w-full bg-linear-to-br from-blue-700 via-blue-800 to-indigo-950">
           <svg
@@ -134,18 +133,17 @@ export default function AuthLayout({ children, type }: AuthLayoutProps) {
                 </h2>
                 <p className="text-lg text-blue-100 leading-relaxed">
                   Join 10,000+ users who high-track their spending and never
-                  miss a renewal again. SubSentry gives you the power to manage
-                  everything in one place.
+                  miss a renewal again.
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-8 py-8 border-y border-white/10">
                 <div>
-                  <div className="text-3xl font-bold text-white">98%</div>
+                  <div className="text-3xl font-bold">98%</div>
                   <div className="text-sm text-blue-200">User Satisfaction</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-white">$1.2M+</div>
+                  <div className="text-3xl font-bold">$1.2M+</div>
                   <div className="text-sm text-blue-200">Tracked Monthly</div>
                 </div>
               </div>
@@ -161,7 +159,7 @@ export default function AuthLayout({ children, type }: AuthLayoutProps) {
                         src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${
                           i * 123
                         }`}
-                        alt="avatar"
+                        alt=""
                       />
                     </div>
                   ))}

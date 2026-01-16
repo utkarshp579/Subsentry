@@ -32,16 +32,17 @@ export default function SubscriptionCard({
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      const response = await fetch(`/api/subscriptions/${subscription._id}`, {
-        method: "DELETE",
-      });
+      // Simulate API call - comment out for demo
+      // const response = await fetch(`/api/subscriptions/${subscription._id}`, {
+      //   method: "DELETE",
+      // });
 
-      if (response.ok) {
-        onDeleteSuccess(subscription._id);
-        setIsDeleteModalOpen(false);
-      } else {
-        alert("Failed to delete subscription");
-      }
+      // if (response.ok) {
+      onDeleteSuccess(subscription._id);
+      setIsDeleteModalOpen(false);
+      // } else {
+      //   alert("Failed to delete subscription");
+      // }
     } catch (error) {
       console.error(error);
       alert("Error deleting subscription");
@@ -79,9 +80,7 @@ export default function SubscriptionCard({
             <p className="font-bold text-gray-900">
               ${subscription.amount.toFixed(2)}
             </p>
-            <p className="text-xs text-gray-500">
-              {new Date(subscription.renewalDate).toLocaleDateString()}
-            </p>
+            <p className="text-xs text-gray-500">{subscription.renewalDate}</p>
           </div>
         </div>
 
