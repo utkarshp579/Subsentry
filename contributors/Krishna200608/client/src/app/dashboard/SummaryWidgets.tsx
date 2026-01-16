@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { TrendingUp, Calendar, CreditCard, Zap } from "lucide-react";
 
-// This type should match your API's Subscription type
-// Adjust as needed for your real API
 interface Subscription {
   amount: number;
   billingCycle: "monthly" | "yearly" | string;
