@@ -53,3 +53,76 @@ export const getUserSubscriptions = async (req, res) => {
     });
   }
 };
+
+export const updateSubscription = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { id } = req.params;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const subscription = await Subscription.findOne({ _id: id, userId });
+    if (!subscription) {
+      return res.status(404).json({ message: 'Subscription not found' });
+    }
+
+    const allowedUpdates = [
+      'name',
+      'amount',
+      'currency',
+      'billingCycle',
+      'category',
+      'renewalDate',
+      'isTrial',
+      'trialEndsAt',
+      'source',
+      'status',
+      'notes',
+    ];
+
+    allowedUpdates.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        subscription[field] = req.body[field];
+      }
+    });
+
+    const updatedSubscription = await subscription.save();
+
+    return res.status(200).json({
+      message: 'Subscription updated successfully',
+      subscription: updatedSubscription,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: 'Failed to update subscription',
+      error: error.message,
+    });
+  }
+};
+
+export const deleteSubscription = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { id } = req.params;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const subscription = await Subscription.findOneAndDelete({ _id: id, userId });
+    if (!subscription) {
+      return res.status(404).json({ message: 'Subscription not found' });
+    }
+
+    return res.status(200).json({
+      message: 'Subscription deleted successfully',
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: 'Failed to delete subscription',
+      error: error.message,
+    });
+  }
+};

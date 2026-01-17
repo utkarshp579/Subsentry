@@ -4,7 +4,7 @@ import { requireAuth } from "../middlewares/clerk.middleware.js";
 
 const router = express.Router();
 
-router.post("/", requireAuth, createSubscription);
-router.get("/", requireAuth, getSubscription);
+router.post("/", createSubscription);
+router.get("/", getSubscription);
 
 export default router;

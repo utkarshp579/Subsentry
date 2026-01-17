@@ -24,11 +24,6 @@ export default function Sidebar({ activePage }: SidebarProperties) {
     { name: "Analytics", href: "/analytics" },
   ];
 
-  const accountItems = [
-    { name: "Settings", href: "/settings" },
-    { name: "Profile", href: "/profile" },
-  ];
-
   return (
     <>
       {/* Mobile backdrop */}
@@ -96,37 +91,7 @@ export default function Sidebar({ activePage }: SidebarProperties) {
               <span>{item.name}</span>
             </Link>
           ))}
-
-          <div className="border-t border-[#2A2A2A]/50 pt-4 mt-6">
-            {accountItems.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`
-                  flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium
-                  transition-all duration-200 mb-1
-                  ${getActiveStateClasses(item.name)}
-                `}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span>{item.name}</span>
-              </Link>
-            ))}
-          </div>
         </nav>
-
-        {/* User Section */}
-        <div className="px-6 py-4 border-t border-[#2A2A2A]/50">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#282828] rounded-full flex items-center justify-center border border-[#2A2A2A]">
-              <span className="text-[#B3B3B3] text-sm font-medium">U</span>
-            </div>
-            <div className="flex-1">
-              <div className="text-sm font-medium text-[#FFFFFF]">User</div>
-              <div className="text-xs text-[#B3B3B3]">user@example.com</div>
-            </div>
-          </div>
-        </div>
       </aside>
 
       {/* Mobile menu button */}

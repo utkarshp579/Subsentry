@@ -1,7 +1,2 @@
-const { v4: uuidv4 } = require('uuid');
-
-const generateUserId = () => {
-  return uuidv4();
-};
-
-module.exports = { generateUserId };
+// This file is no longer needed - authentication has been removed
+// This file can be safely deleted
