@@ -18,7 +18,8 @@ export interface Subscription {
 }
 
 export interface SubscriptionResponse {
-  subscriptions: Subscription[];
+  data: Subscription[];
+  meta?: any;
 }
 
 export async function getSubscriptions(token: string): Promise<SubscriptionResponse> {
