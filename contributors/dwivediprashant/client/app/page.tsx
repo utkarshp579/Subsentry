@@ -10,7 +10,7 @@ import DeleteConfirmationDialog from "./components/DeleteConfirmationDialog";
 
 export default function Dashboard() {
   const [subscriptionList, setSubscriptionList] = useState<SubscriptionData[]>(
-    []
+    [],
   );
   const [loadingState, setLoadingState] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -41,31 +41,33 @@ export default function Dashboard() {
 
   const calculateStats = () => {
     const activeSubscriptions = subscriptionList.filter(
-      (sub) => sub.serviceStatus === "active"
+      (sub) => sub.serviceStatus === "active",
     );
     const trialSubscriptions = subscriptionList.filter(
-      (sub) => sub.serviceStatus === "trial"
-    );
-    const monthlySubscriptions = activeSubscriptions.filter(
-      (sub) => sub.billingInterval === "monthly"
-    );
-    const monthlyTotal = monthlySubscriptions.reduce(
-      (sum, sub) => sum + sub.cost,
-      0
+      (sub) => sub.serviceStatus === "trial",
     );
 
-    const today = new Date();
-    const sevenDaysFromNow = new Date();
-    sevenDaysFromNow.setDate(today.getDate() + 7);
-    const upcomingRenewals = subscriptionList.filter((sub) => {
-      const renewalDate = new Date(sub.upcomingRenewal);
-      return renewalDate >= today && renewalDate <= sevenDaysFromNow;
-    });
+    const spendTotals = activeSubscriptions.reduce(
+      (totals, sub) => {
+        if (sub.billingInterval === "monthly") {
+          totals.monthlySpend += sub.cost;
+          totals.yearlySpend += sub.cost * 12;
+        } else if (sub.billingInterval === "yearly") {
+          totals.yearlySpend += sub.cost;
+        } else if (sub.billingInterval === "weekly") {
+          totals.monthlySpend += sub.cost * 4;
+          totals.yearlySpend += sub.cost * 52;
+        }
+
+        return totals;
+      },
+      { monthlySpend: 0, yearlySpend: 0 },
+    );
 
     return {
-      monthlySpend: monthlyTotal,
+      monthlySpend: spendTotals.monthlySpend,
+      yearlySpend: spendTotals.yearlySpend,
       activeCount: activeSubscriptions.length,
-      upcomingRenewalsCount: upcomingRenewals.length,
       trialCount: trialSubscriptions.length,
     };
   };
@@ -104,7 +106,7 @@ export default function Dashboard() {
         `/api/subscriptions/${deletingSubscription._id}`,
         {
           method: "DELETE",
-        }
+        },
       );
 
       if (!response.ok) {
@@ -131,6 +133,12 @@ export default function Dashboard() {
   };
 
   const stats = calculateStats();
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 2,
+    }).format(value);
 
   return (
     <AppLayout activePage="Dashboard">
@@ -155,16 +163,18 @@ export default function Dashboard() {
       )}
 
       {/* Header Section */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[#FFFFFF] mb-2">Dashboard</h1>
-          <p className="text-[#B3B3B3]">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#FFFFFF] mb-2">
+            Dashboard
+          </h1>
+          <p className="text-[#B3B3B3] text-sm sm:text-base">
             Welcome back! Here's an overview of your subscriptions.
           </p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="px-6 py-3 bg-[#2563EB] text-white rounded-lg hover:bg-[#1D4ED8] transition-colors flex items-center"
+          className="w-full sm:w-auto px-6 py-3 bg-[#2563EB] text-white rounded-lg hover:bg-[#1D4ED8] transition-colors flex items-center justify-center"
         >
           <svg
             className="w-5 h-5 mr-2"
@@ -184,64 +194,52 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-[#191919] p-6 rounded-xl border border-[#2A2A2A]/50">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-8">
+        <div className="bg-[#191919] p-4 sm:p-6 rounded-xl border border-[#3B82F6]/40 shadow-[0_0_0_1px_rgba(59,130,246,0.2)] min-h-[128px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[#FFFFFF] text-sm font-medium">
               Monthly Spend
             </span>
-            <div className="w-8 h-8 bg-[#282828] rounded-lg flex items-center justify-center">
-              <span className="text-[#0000FF] text-sm">💰</span>
-            </div>
           </div>
-          <div className="text-4xl font-bold text-[#0000FF]">
-            ${stats.monthlySpend.toFixed(2)}
+          <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#0000FF] leading-tight break-words">
+            {formatCurrency(stats.monthlySpend)}
           </div>
           <div className="text-xs text-[#B3B3B3] mt-1">
             From {stats.activeCount} active subscriptions
           </div>
         </div>
 
-        <div className="bg-[#191919] p-6 rounded-xl border border-[#2A2A2A]/50">
+        <div className="bg-[#191919] p-4 sm:p-6 rounded-xl border border-[#2A2A2A]/50 min-h-[128px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[#FFFFFF] text-sm font-medium">
+              Yearly Spend
+            </span>
+          </div>
+          <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#60A5FA] leading-tight break-words">
+            {formatCurrency(stats.yearlySpend)}
+          </div>
+          <div className="text-xs text-[#B3B3B3] mt-1">Annualized total</div>
+        </div>
+
+        <div className="bg-[#191919] p-4 sm:p-6 rounded-xl border border-[#2A2A2A]/50 min-h-[128px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[#FFFFFF] text-sm font-medium">
               Active Subscriptions
             </span>
-            <div className="w-8 h-8 bg-[#282828] rounded-lg flex items-center justify-center">
-              <span className="text-[#10B981] text-sm">✓</span>
-            </div>
           </div>
-          <div className="text-4xl font-bold text-[#009200]">
+          <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#009200] leading-tight break-words">
             {stats.activeCount}
           </div>
           <div className="text-xs text-[#B3B3B3] mt-1">All active</div>
         </div>
 
-        <div className="bg-[#191919] p-6 rounded-xl border border-[#2A2A2A]/50">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[#FFFFFF] text-sm font-medium">
-              Upcoming Renewals
-            </span>
-            <div className="w-8 h-8 bg-[#282828] rounded-lg flex items-center justify-center">
-              <span className="text-[#F59E0B] text-sm">📅</span>
-            </div>
-          </div>
-          <div className="text-4xl font-bold text-[#F59E0B]">
-            {stats.upcomingRenewalsCount}
-          </div>
-          <div className="text-xs text-[#B3B3B3] mt-1">Next 7 days</div>
-        </div>
-
-        <div className="bg-[#191919] p-6 rounded-xl border border-[#2A2A2A]/50">
+        <div className="bg-[#191919] p-4 sm:p-6 rounded-xl border border-[#2A2A2A]/50 min-h-[128px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[#FFFFFF] text-sm font-medium">
               Free Trials
             </span>
-            <div className="w-8 h-8 bg-[#282828] rounded-lg flex items-center justify-center">
-              <span className="text-[#737373] text-sm">⏱</span>
-            </div>
           </div>
-          <div className="text-4xl font-bold text-[#FF0000]">
+          <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#FF0000] leading-tight break-words">
             {stats.trialCount}
           </div>
           <div className="text-xs text-[#B3B3B3] mt-1">Active trials</div>
