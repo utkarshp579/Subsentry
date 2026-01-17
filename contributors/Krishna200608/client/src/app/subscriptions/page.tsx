@@ -60,7 +60,7 @@ export default function SubscriptionsPage() {
           return;
         }
         const data = await getSubscriptions(token);
-        setSubscriptions(data.subscriptions || []);
+        setSubscriptions(data.data || []);
       } catch (err) {
         setError('Failed to load subscriptions. Make sure the server is running.');
         console.error(err);
