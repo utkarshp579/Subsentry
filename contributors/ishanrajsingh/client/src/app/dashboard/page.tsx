@@ -5,6 +5,7 @@ import { useAuth } from '@clerk/nextjs';
 import Link from 'next/link';
 import DashboardLayout from '../components/DashboardLayout';
 import SummaryWidgets from './SummaryWidget';
+import UpcomingRenewals from './UpcomingRenewals';
 
 import {
   AlertTriangle,
@@ -35,7 +36,7 @@ const mockSubscriptions: Subscription[] = [
     currency: 'USD',
     billingCycle: 'monthly',
     category: 'entertainment',
-    renewalDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+    renewalDate: new Date(Date.now() + 2 * 86400000).toISOString(),
     isTrial: false,
     source: 'manual',
     status: 'active',
@@ -80,7 +81,7 @@ const mockSubscriptions: Subscription[] = [
     currency: 'USD',
     billingCycle: 'monthly',
     category: 'productivity',
-    renewalDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    renewalDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(),
     isTrial: true,
     trialEndsAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
     source: 'manual',
@@ -138,7 +139,6 @@ export default function DashboardPage() {
   }, [getToken]);
 
   const activeSubs = subs.filter(s => s.status === 'active');
-
   const urgent = subs.filter(
     s => s.status === 'active' && isUrgentRenewal(s.renewalDate),
   );
@@ -192,9 +192,11 @@ export default function DashboardPage() {
       {/* Summary Widgets */}
       <SummaryWidgets />
 
-      {/* Main grid */}
+      {/* 🔥 ADDED: Issue 15 Upcoming Renewals Section */}
+      <UpcomingRenewals subscriptions={subs} />
+
+      {/* Existing Main Grid (UNCHANGED) */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Upcoming renewals */}
         <div className="lg:col-span-2 rounded-xl border border-[#1a1a1a] bg-[#0f0f0f] p-6">
           <div className="mb-5 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-white">
@@ -292,7 +294,6 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Right column */}
         <div className="space-y-6">
           <div className="rounded-xl border border-[#1a1a1a] bg-[#0f0f0f] p-6">
             <h3 className="mb-4 text-lg font-semibold text-white">
