@@ -46,6 +46,13 @@ export default function Dashboard() {
     const trialSubscriptions = subscriptionList.filter(
       (sub) => sub.serviceStatus === "trial",
     );
+    const monthlySubscriptions = activeSubscriptions.filter(
+      (sub) => sub.billingInterval === "monthly",
+    );
+    const monthlyTotal = monthlySubscriptions.reduce(
+      (sum, sub) => sum + sub.cost,
+      0,
+    );
 
     const spendTotals = activeSubscriptions.reduce(
       (totals, sub) => {
@@ -139,6 +146,59 @@ export default function Dashboard() {
       currency: "USD",
       maximumFractionDigits: 2,
     }).format(value);
+
+  const formatDate = (dateString: string) =>
+    new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }).format(new Date(dateString));
+
+  const getDaysUntil = (dateString: string) => {
+    const today = new Date();
+    const startOfToday = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+    );
+    const targetDate = new Date(dateString);
+    const startOfTarget = new Date(
+      targetDate.getFullYear(),
+      targetDate.getMonth(),
+      targetDate.getDate(),
+    );
+    const diffMs = startOfTarget.getTime() - startOfToday.getTime();
+    return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  };
+
+  const upcomingRenewals = subscriptionList
+    .filter((subscription) => Boolean(subscription.upcomingRenewal))
+    .map((subscription) => ({
+      ...subscription,
+      daysUntil: getDaysUntil(subscription.upcomingRenewal),
+    }))
+    .filter(
+      (subscription) =>
+        subscription.daysUntil >= 1 && subscription.daysUntil <= 20,
+    )
+    .sort(
+      (a, b) =>
+        new Date(a.upcomingRenewal).getTime() -
+        new Date(b.upcomingRenewal).getTime(),
+    );
+
+  const todayRenewals = subscriptionList
+    .filter((subscription) => Boolean(subscription.upcomingRenewal))
+    .map((subscription) => ({
+      ...subscription,
+      daysUntil: getDaysUntil(subscription.upcomingRenewal),
+    }))
+    .filter((subscription) => subscription.daysUntil === 0)
+    .sort(
+      (a, b) =>
+        new Date(a.upcomingRenewal).getTime() -
+        new Date(b.upcomingRenewal).getTime(),
+    );
 
   return (
     <AppLayout activePage="Dashboard">
@@ -244,6 +304,126 @@ export default function Dashboard() {
           </div>
           <div className="text-xs text-[#B3B3B3] mt-1">Active trials</div>
         </div>
+      </div>
+
+      {/* Today Renewals */}
+      <div className="mb-10">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
+          <div>
+            <h2 className="text-xl font-semibold text-[#FFFFFF]">
+              Renewing Today
+            </h2>
+            <p className="text-sm text-[#B3B3B3]">Due today</p>
+          </div>
+          <span className="text-xs text-[#B3B3B3]">
+            {todayRenewals.length} today
+          </span>
+        </div>
+
+        {todayRenewals.length === 0 ? (
+          <div className="bg-[#191919] border border-[#2A2A2A]/50 rounded-xl p-6 text-sm text-[#B3B3B3]">
+            No renewals due today.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {todayRenewals.map((subscription) => (
+              <div
+                key={subscription._id}
+                className="rounded-xl border border-[#EF4444]/60 shadow-[0_0_0_1px_rgba(239,68,68,0.2)] p-5 bg-[#191919]"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-base font-semibold text-[#FFFFFF]">
+                      {subscription.serviceName}
+                    </p>
+                    <p className="text-xs text-[#B3B3B3]">
+                      {subscription.serviceCategory}
+                    </p>
+                  </div>
+                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-[#EF4444]/15 text-[#FCA5A5]">
+                    Renews today
+                  </span>
+                </div>
+                <div className="mt-4 flex items-center justify-between text-sm">
+                  <span className="text-[#B3B3B3]">
+                    {formatDate(subscription.upcomingRenewal)}
+                  </span>
+                  <span className="text-[#FFFFFF] font-medium">
+                    {formatCurrency(subscription.cost)} /{" "}
+                    {subscription.billingInterval}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Upcoming Renewals */}
+      <div className="mb-10">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
+          <div>
+            <h2 className="text-xl font-semibold text-[#FFFFFF]">
+              Upcoming Renewals
+            </h2>
+            <p className="text-sm text-[#B3B3B3]">Next 1–20 days</p>
+          </div>
+          <span className="text-xs text-[#B3B3B3]">
+            {upcomingRenewals.length} upcoming
+          </span>
+        </div>
+
+        {upcomingRenewals.length === 0 ? (
+          <div className="bg-[#191919] border border-[#2A2A2A]/50 rounded-xl p-6 text-sm text-[#B3B3B3]">
+            No renewals in the next 20 days.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {upcomingRenewals.map((subscription) => {
+              const isUrgent = subscription.daysUntil <= 10;
+
+              return (
+                <div
+                  key={subscription._id}
+                  className={`rounded-xl border p-5 bg-[#191919] ${
+                    isUrgent
+                      ? "border-[#F97316]/60 shadow-[0_0_0_1px_rgba(249,115,22,0.25)]"
+                      : "border-[#2A2A2A]/50"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-base font-semibold text-[#FFFFFF]">
+                        {subscription.serviceName}
+                      </p>
+                      <p className="text-xs text-[#B3B3B3]">
+                        {subscription.serviceCategory}
+                      </p>
+                    </div>
+                    <span
+                      className={`text-xs font-medium px-2 py-1 rounded-full ${
+                        isUrgent
+                          ? "bg-[#F97316]/15 text-[#FDBA74]"
+                          : "bg-[#2563EB]/10 text-[#93C5FD]"
+                      }`}
+                    >
+                      Renews in {subscription.daysUntil} days
+                    </span>
+                  </div>
+                  <div className="mt-4 flex items-center justify-between text-sm">
+                    <span className="text-[#B3B3B3]">
+                      {formatDate(subscription.upcomingRenewal)}
+                    </span>
+                    <span className="text-[#FFFFFF] font-medium">
+                      {formatCurrency(subscription.cost)} /
+                      {" " + subscription.billingInterval}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Modal */}
