@@ -18,7 +18,11 @@ export interface Subscription {
 }
 
 export interface SubscriptionResponse {
-  subscriptions: Subscription[];
+  data: Subscription[];
+  meta?: {
+    monthlySpend?: number;
+    yearlySpend?: number;
+  };
 }
 
 export async function getSubscriptions(token: string): Promise<SubscriptionResponse> {
@@ -31,12 +35,19 @@ export async function getSubscriptions(token: string): Promise<SubscriptionRespo
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    console.error('Get subscriptions error:', error);
     throw new Error('Failed to fetch subscriptions');
   }
 
-  return response.json();
+  const payload = await response.json();
+
+  if (Array.isArray(payload?.subscriptions)) {
+    return {
+      data: payload.subscriptions,
+      meta: payload.meta ?? {},
+    };
+  }
+
+  return payload;
 }
 
 export async function createSubscription(
@@ -53,8 +64,6 @@ export async function createSubscription(
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    console.error('Create subscription error:', error);
     throw new Error('Failed to create subscription');
   }
 
@@ -66,10 +75,8 @@ export async function updateSubscription(
   id: string,
   data: Partial<Omit<Subscription, '_id' | 'userId' | 'createdAt' | 'updatedAt'>>
 ): Promise<{ message: string; subscription: Subscription }> {
-  console.log('Updating subscription:', id, data);
-  
   const response = await fetch(`${API_BASE_URL}/api/subscriptions/${id}`, {
-    method: 'PATCH', // ✅ Using PATCH
+    method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
@@ -78,15 +85,9 @@ export async function updateSubscription(
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Update subscription error:', response.status, errorText);
-    
-    try {
-      const errorJson = JSON.parse(errorText);
-      throw new Error(errorJson.message || errorJson.error || 'Failed to update subscription');
-    } catch {
-      throw new Error(`Failed to update subscription: ${response.status} ${response.statusText}`);
-    }
+    const error = await response.text();
+    console.error('Update subscription error:', error);
+    throw new Error('Failed to update subscription');
   }
 
   return response.json();
