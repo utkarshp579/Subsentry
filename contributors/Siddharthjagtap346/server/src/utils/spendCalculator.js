@@ -1,5 +1,4 @@
 import { BILLING_CYCLES } from '../constants/subscription.constants.js';
-
 /**
  * Normalize a subscription amount to YEARLY value
  */
@@ -22,14 +21,12 @@ const toYearlyAmount = (subscription) => {
       return 0;
   }
 };
-
 export const calculateYearlySpend = (subscriptions = []) => {
   return subscriptions.reduce(
     (total, sub) => total + toYearlyAmount(sub),
     0
   );
 };
-
 /**
  * Calculate total monthly spend
  * Reuses yearly normalization (NO duplicate math)
