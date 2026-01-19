@@ -30,6 +30,8 @@ import {
   UpdateSubscriptionModal,
   ViewToggle,
 } from '../components/subscriptions';
+import { useRef } from 'react';
+import EmailImportModal from '../components/subscriptions/EmailImportModal';
 
 export default function SubscriptionsPage() {
   const { getToken } = useAuth();
@@ -55,6 +57,15 @@ export default function SubscriptionsPage() {
     useState<Subscription | null>(null);
   const [deletingSubscription, setDeletingSubscription] =
     useState<Subscription | null>(null);
+
+  const [isImporting, setIsImporting] = useState(false);
+  const [importSuccess, setImportSuccess] = useState<string | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importState, setImportState] = useState<
+    'explain' | 'loading' | 'success' | 'error' | 'stopped'
+  >('explain');
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Fetch subscriptions from real API
   useEffect(() => {
@@ -162,6 +173,94 @@ export default function SubscriptionsPage() {
     }
   };
 
+  const openEmailImportModal = () => {
+    setShowImportModal(true);
+    setImportState('explain');
+    setImportError(null);
+    setImportSuccess(null);
+  };
+
+ const handleEmailImport = async () => {
+  setImportState('loading');
+  setImportError(null);
+  setImportSuccess(null);
+
+  const start = Date.now();
+
+  const controller = new AbortController();
+  abortControllerRef.current = controller;
+
+  try {
+    const token = await getToken();
+    if (!token) throw new Error('Authentication required');
+
+    const endpoint = `${process.env.NEXT_PUBLIC_API_URL}/api/subscriptions/email/import`;
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({}),
+      signal: controller.signal,
+    });
+
+    const rawText = await res.text();
+
+    let data: any;
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      throw new Error('Invalid server response');
+    }
+
+    if (!res.ok) {
+      throw new Error(data?.message || 'Email import failed');
+    }
+
+    const elapsed = Date.now() - start;
+    if (elapsed < 3000) {
+      await new Promise((r) => setTimeout(r, 3000 - elapsed));
+    }
+
+    const inserted = Number(data.inserted || 0);
+    const skipped = Number(data.skipped || 0);
+
+    setImportSuccess(
+      `Imported ${inserted} subscription${inserted !== 1 ? 's' : ''}` +
+        (skipped ? `, skipped ${skipped}` : '')
+    );
+
+    setImportState('success');
+
+    await handleRefresh();
+  } catch (err: any) {
+    const elapsed = Date.now() - start;
+    if (elapsed < 3000) {
+      await new Promise((r) => setTimeout(r, 3000 - elapsed));
+    }
+
+    if (err.name === 'AbortError') {
+      setImportError('Import stopped by user');
+      setImportState('stopped');
+      return;
+    }
+
+    setImportError(err.message || 'Failed to import subscriptions');
+    setImportState('error');
+  } finally {
+    abortControllerRef.current = null;
+  }
+};
+const handleStopImport = () => {
+  if (abortControllerRef.current) {
+    abortControllerRef.current.abort();
+  }
+};
+
+
+
   const handleEditSubscription = async (
     id: string,
     data: Partial<Subscription>
@@ -234,11 +333,35 @@ export default function SubscriptionsPage() {
             <RefreshCw className={cn('w-4 h-4', isLoading && 'animate-spin')} />
           </Button>
 
-          <Link href="/subscriptions/new" className="ml-auto">
-            <ShimmerButton className="flex items-center gap-2 h-10 px-4">
-              <span className="hidden sm:inline">+ Add New</span>
-            </ShimmerButton>
-          </Link>
+          <div className="flex items-center gap-2 ml-auto">
+            {/* Import from Email */}
+            <Button
+              variant="secondary"
+              onClick={openEmailImportModal}
+              className="flex items-center gap-2"
+            >
+
+              {isImporting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Importing…
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-4 h-4" />
+                  Import from Email
+                </>
+              )}
+            </Button>
+
+            {/* Add New */}
+            <Link href="/subscriptions/new">
+              <ShimmerButton className="flex items-center gap-2 h-10 px-4">
+                <span className="hidden sm:inline">+ Add New</span>
+              </ShimmerButton>
+            </Link>
+          </div>
+
         </div>
       </div>
 
@@ -326,6 +449,20 @@ export default function SubscriptionsPage() {
         }}
         onRemove={handleDeleteSubscription}
       />
+      <EmailImportModal
+        open={showImportModal}
+        state={importState}
+        successMessage={importSuccess}
+        errorMessage={importError}
+        onConfirm={handleEmailImport}
+        onStop={handleStopImport}
+        onClose={() => {
+          setShowImportModal(false);
+          setImportState('explain');
+        }}
+      />
+
+
     </DashboardLayout>
   );
 }
