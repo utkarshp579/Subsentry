@@ -4,6 +4,7 @@ import {
     handleCallback,
     getStatus,
     disconnect,
+    fetchEmails,
 } from '../controllers/gmail.controller.js';
 
 const router = Router();
@@ -15,6 +16,7 @@ const router = Router();
  * GET  /api/gmail/callback   - Handle Google OAuth callback
  * GET  /api/gmail/status     - Check connection status
  * POST /api/gmail/disconnect - Remove Gmail connection
+ * GET  /api/gmail/emails     - Fetch transactional emails
  */
 
 // Start OAuth flow - returns auth URL
@@ -29,4 +31,8 @@ router.get('/status', getStatus);
 // Disconnect Gmail
 router.post('/disconnect', disconnect);
 
+// Fetch transactional emails
+router.get('/emails', fetchEmails);
+
 export default router;
+
