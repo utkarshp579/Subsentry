@@ -1,52 +1,132 @@
-import { oauth2Client, SCOPES } from "../config/googleOAuth.js";
-import GmailToken from "../models/GmailToken.js";
+import { GmailToken } from '../models/GmailToken.js';
+import {
+  createAuthUrl,
+  fetchTokensFromCode,
+  fetchGmailAddress,
+  refreshExpiredAccessToken,
+  encrypt,
+  decrypt,
+  createCsrfState,
+} from '../config/googleOAuth.js';
 
-//Redirect user to Google OAuth consent page
-export const startGoogleOAuth = async (req, res) => {
-  try {
-    const authUrl = oauth2Client.generateAuthUrl({
-      access_type: "offline",
-      prompt: "consent",
-      scope: SCOPES
-    });
-    res.redirect(authUrl);
-  } catch (error) {
-    return res.status(500).json({ error: "Failed to initiate Google OAuth" });
+const csrfStore = new Map();
+
+export const startGmailAuth = async (req, res) => {
+  if (!req.user?.id) {
+    return res.status(401).json({ success: false });
   }
+
+  const csrf = createCsrfState();
+  csrfStore.set(csrf, { uid: req.user.id, ts: Date.now() });
+
+  const limit = Date.now() - 10 * 60 * 1000;
+  for (const [key, val] of csrfStore.entries()) {
+    if (val.ts < limit) csrfStore.delete(key);
+  }
+
+  const url = createAuthUrl(csrf);
+  res.json({ success: true, url });
 };
 
-//Handle callback and store tokens securely
-export const googleOAuthCallback = async (req, res) => {
-  const code = req.query.code;
-  if (!code) {
-    return res.status(400).json({ error: "Authorization code missing" });
+export const gmailCallback = async (req, res) => {
+  const { code, state, error } = req.query;
+
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+
+  if (error === 'access_denied') {
+    return res.redirect(`${clientUrl}/settings?gmail=denied`);
   }
 
-  try {
-    const { tokens } = await oauth2Client.getToken(code);
+  if (!code || !state) {
+    return res.redirect(`${clientUrl}/settings?gmail=error`);
+  }
 
-    // If no refresh token — user denied or token refused
-    if (!tokens.refresh_token) {
-      return res.status(401).json({
-        error: "Permission denied: Refresh token not provided"
-      });
+  const record = csrfStore.get(state);
+  if (!record) {
+    return res.redirect(`${clientUrl}/settings?gmail=invalid_state`);
+  }
+
+  csrfStore.delete(state);
+
+  try {
+    const tokens = await fetchTokensFromCode(code);
+
+    if (!tokens?.access_token || !tokens?.refresh_token) {
+      return res.redirect(`${clientUrl}/settings?gmail=token_error`);
     }
 
-    // Save tokens in DB securely
+    const email = await fetchGmailAddress(tokens.access_token);
+
+    const expiry = new Date(
+      Date.now() + (tokens.expiry_date || 3600 * 1000)
+    );
+
     await GmailToken.findOneAndUpdate(
-      { user: req.user?.id || "default" },
+      { userId: record.uid },
       {
-        accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token,
-        expiryDate: tokens.expiry_date
+        userId: record.uid,
+        gmailAddress: email,
+        encryptedAccessToken: encrypt(tokens.access_token),
+        encryptedRefreshToken: encrypt(tokens.refresh_token),
+        accessTokenExpiresAt: expiry,
+        connectedOn: new Date(),
       },
       { upsert: true }
     );
 
-    return res
-      .status(200)
-      .json({ message: "Gmail connected (read-only) successfully!" });
-  } catch (err) {
-    return res.status(500).json({ error: "OAuth callback failed" });
+    res.redirect(`${clientUrl}/settings?gmail=success`);
+  } catch {
+    res.redirect(`${clientUrl}/settings?gmail=callback_failed`);
   }
+};
+
+export const gmailStatus = async (req, res) => {
+  if (!req.user?.id) {
+    return res.status(401).json({ success: false });
+  }
+
+  const record = await GmailToken.findOne({ userId: req.user.id });
+
+  if (!record) {
+    return res.json({ success: true, connected: false });
+  }
+
+  if (Date.now() > record.accessTokenExpiresAt.getTime()) {
+    try {
+      const fresh = await refreshExpiredAccessToken(
+        record.encryptedRefreshToken
+      );
+
+      record.encryptedAccessToken = encrypt(fresh.access_token);
+      record.accessTokenExpiresAt = new Date(
+        fresh.expiry_date || Date.now() + 3600 * 1000
+      );
+
+      await record.save();
+    } catch {
+      await GmailToken.deleteOne({ userId: req.user.id });
+      return res.json({ success: true, connected: false });
+    }
+  }
+
+  res.json({
+    success: true,
+    connected: true,
+    email: record.gmailAddress,
+    connectedOn: record.connectedOn,
+  });
+};
+
+export const disconnectGmail = async (req, res) => {
+  if (!req.user?.id) {
+    return res.status(401).json({ success: false });
+  }
+
+  const result = await GmailToken.deleteOne({ userId: req.user.id });
+
+  if (!result.deletedCount) {
+    return res.status(404).json({ success: false });
+  }
+
+  res.json({ success: true });
 };
