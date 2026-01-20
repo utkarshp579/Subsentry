@@ -146,4 +146,71 @@ export const generateState = () => {
     return crypto.randomBytes(32).toString('hex');
 };
 
+/**
+ * Search emails using Gmail API with query
+ * @param {string} accessToken - Valid access token
+ * @param {string} query - Gmail search query
+ * @param {number} maxResults - Maximum results to return (default 20)
+ * @param {string} pageToken - Token for pagination (optional)
+ */
+export const searchEmails = async (accessToken, query, maxResults = 20, pageToken = null) => {
+    const oauth2Client = createOAuth2Client();
+    oauth2Client.setCredentials({ access_token: accessToken });
+
+    const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+
+    const params = {
+        userId: 'me',
+        q: query,
+        maxResults: Math.min(maxResults, 100), // Cap at 100
+    };
+
+    if (pageToken) {
+        params.pageToken = pageToken;
+    }
+
+    const { data } = await gmail.users.messages.list(params);
+
+    return {
+        messages: data.messages || [],
+        nextPageToken: data.nextPageToken || null,
+        resultSizeEstimate: data.resultSizeEstimate || 0,
+    };
+};
+
+/**
+ * Get email metadata (subject, sender, timestamp)
+ * @param {string} accessToken - Valid access token
+ * @param {string} messageId - Gmail message ID
+ */
+export const getEmailMetadata = async (accessToken, messageId) => {
+    const oauth2Client = createOAuth2Client();
+    oauth2Client.setCredentials({ access_token: accessToken });
+
+    const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+
+    // Only fetch metadata, not full body
+    const { data } = await gmail.users.messages.get({
+        userId: 'me',
+        id: messageId,
+        format: 'metadata',
+        metadataHeaders: ['Subject', 'From', 'Date'],
+    });
+
+    // Parse headers
+    const headers = data.payload?.headers || [];
+    const getHeader = (name) => headers.find(h => h.name === name)?.value || '';
+
+    return {
+        messageId: data.id,
+        threadId: data.threadId,
+        subject: getHeader('Subject'),
+        sender: getHeader('From'),
+        timestamp: getHeader('Date'),
+        internalDate: data.internalDate,
+        snippet: data.snippet,
+    };
+};
+
 export { GMAIL_SCOPES };
+

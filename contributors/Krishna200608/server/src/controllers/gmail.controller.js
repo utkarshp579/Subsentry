@@ -8,6 +8,7 @@ import {
     decryptToken,
     generateState,
 } from '../config/gmail.config.js';
+import { fetchTransactionalEmails } from '../services/emailFetcher.js';
 
 // In-memory state store for CSRF protection (use Redis in production)
 const stateStore = new Map();
@@ -236,3 +237,59 @@ export const disconnect = async (req, res) => {
         });
     }
 };
+
+/**
+ * Fetch transactional emails
+ * GET /api/gmail/emails
+ */
+export const fetchEmails = async (req, res) => {
+    try {
+        if (!req.user?.id) {
+            return res.status(401).json({
+                success: false,
+                error: 'Authentication required',
+            });
+        }
+
+        // Parse query parameters
+        const maxResults = Math.min(parseInt(req.query.limit) || 20, 100);
+        const pageToken = req.query.pageToken || null;
+        const keywords = req.query.keywords
+            ? req.query.keywords.split(',').map(k => k.trim())
+            : undefined;
+
+        const result = await fetchTransactionalEmails(req.user.id, {
+            maxResults,
+            pageToken,
+            keywords,
+        });
+
+        res.json({
+            success: true,
+            ...result,
+        });
+    } catch (error) {
+        // Handle specific error cases
+        if (error.message === 'Gmail not connected') {
+            return res.status(400).json({
+                success: false,
+                error: 'Gmail not connected. Please connect your Gmail first.',
+            });
+        }
+
+        // Handle rate limiting
+        if (error.code === 429 || error.message?.includes('Rate Limit')) {
+            return res.status(429).json({
+                success: false,
+                error: 'Rate limit exceeded. Please try again later.',
+                retryAfter: 60,
+            });
+        }
+
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch emails',
+        });
+    }
+};
+
