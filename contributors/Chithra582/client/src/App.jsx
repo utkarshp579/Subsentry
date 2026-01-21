@@ -1,11 +1,10 @@
-import React from 'react';
-import DashboardSummaryWidgets from './components/DashboardSummaryWidgets';
-import './index.css';
+import React from "react";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
-    <div className="App">
-      <DashboardSummaryWidgets />
+    <div>
+      <Dashboard />
     </div>
   );
 }
