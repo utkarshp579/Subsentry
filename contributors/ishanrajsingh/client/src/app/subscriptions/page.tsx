@@ -1,30 +1,35 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { ShimmerButton } from '@/components/ui/aceternity';
+import { Button } from '@/components/ui/button';
+import {
+  Subscription,
+  deleteSubscription,
+  getSubscriptions,
+  updateSubscription,
+} from '@/lib/api';
+import { cn } from '@/lib/utils';
 import { useAuth } from '@clerk/nextjs';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Loader2, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
-import { Plus, Loader2, RefreshCw } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
 import {
-  SubscriptionCard,
-  FilterBar,
-  SortDropdown,
-  ViewToggle,
   EmptyState,
-  QuickStats,
-  FilterStatus,
+  FilterBar,
   FilterBillingCycle,
   FilterCategory,
+  FilterStatus,
+  QuickStats,
+  RemoveSubscriptionDialog,
+  SortDropdown,
   SortField,
   SortOrder,
+  SubscriptionCard,
   UpdateSubscriptionModal,
-  RemoveSubscriptionDialog,
+  ViewToggle,
 } from '../components/subscriptions';
-import { Subscription, getSubscriptions, updateSubscription, deleteSubscription } from '@/lib/api';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { ShimmerButton } from '@/components/ui/aceternity';
 
 export default function SubscriptionsPage() {
   const { getToken } = useAuth();
@@ -37,7 +42,8 @@ export default function SubscriptionsPage() {
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
-  const [billingCycleFilter, setBillingCycleFilter] = useState<FilterBillingCycle>('all');
+  const [billingCycleFilter, setBillingCycleFilter] =
+    useState<FilterBillingCycle>('all');
   const [categoryFilter, setCategoryFilter] = useState<FilterCategory>('all');
 
   // Sort state
@@ -45,8 +51,10 @@ export default function SubscriptionsPage() {
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
   // Edit/Delete modal state
-  const [editingSubscription, setEditingSubscription] = useState<Subscription | null>(null);
-  const [deletingSubscription, setDeletingSubscription] = useState<Subscription | null>(null);
+  const [editingSubscription, setEditingSubscription] =
+    useState<Subscription | null>(null);
+  const [deletingSubscription, setDeletingSubscription] =
+    useState<Subscription | null>(null);
 
   // Fetch subscriptions from real API
   useEffect(() => {
@@ -62,7 +70,9 @@ export default function SubscriptionsPage() {
         const data = await getSubscriptions(token);
         setSubscriptions(data.data || []);
       } catch (err) {
-        setError('Failed to load subscriptions. Make sure the server is running.');
+        setError(
+          'Failed to load subscriptions. Make sure the server is running.'
+        );
         console.error(err);
       } finally {
         setIsLoading(false);
@@ -85,13 +95,13 @@ export default function SubscriptionsPage() {
 
     // Apply filters
     if (statusFilter !== 'all') {
-      result = result.filter(s => s.status === statusFilter);
+      result = result.filter((s) => s.status === statusFilter);
     }
     if (billingCycleFilter !== 'all') {
-      result = result.filter(s => s.billingCycle === billingCycleFilter);
+      result = result.filter((s) => s.billingCycle === billingCycleFilter);
     }
     if (categoryFilter !== 'all') {
-      result = result.filter(s => s.category === categoryFilter);
+      result = result.filter((s) => s.category === categoryFilter);
     }
 
     // Apply sorting
@@ -99,7 +109,9 @@ export default function SubscriptionsPage() {
       let comparison = 0;
       switch (sortField) {
         case 'renewalDate':
-          comparison = new Date(a.renewalDate).getTime() - new Date(b.renewalDate).getTime();
+          comparison =
+            new Date(a.renewalDate).getTime() -
+            new Date(b.renewalDate).getTime();
           break;
         case 'amount':
           comparison = a.amount - b.amount;
@@ -108,14 +120,22 @@ export default function SubscriptionsPage() {
           comparison = a.name.localeCompare(b.name);
           break;
         case 'createdAt':
-          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          comparison =
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
           break;
       }
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
     return result;
-  }, [subscriptions, statusFilter, billingCycleFilter, categoryFilter, sortField, sortOrder]);
+  }, [
+    subscriptions,
+    statusFilter,
+    billingCycleFilter,
+    categoryFilter,
+    sortField,
+    sortOrder,
+  ]);
 
   const clearFilters = () => {
     setStatusFilter('all');
@@ -142,7 +162,10 @@ export default function SubscriptionsPage() {
     }
   };
 
-  const handleEditSubscription = async (id: string, data: Partial<Subscription>) => {
+  const handleEditSubscription = async (
+    id: string,
+    data: Partial<Subscription>
+  ) => {
     const token = await getToken();
     if (!token) {
       throw new Error('Authentication required');
@@ -165,7 +188,10 @@ export default function SubscriptionsPage() {
   };
 
   return (
-    <DashboardLayout title="Subscriptions" subtitle="Manage all your recurring payments">
+    <DashboardLayout
+      title="Subscriptions"
+      subtitle="Manage all your recurring payments"
+    >
       {/* Quick Stats */}
       {!isLoading && subscriptions.length > 0 && (
         <div className="mb-6">
@@ -191,7 +217,9 @@ export default function SubscriptionsPage() {
             sortField={sortField}
             sortOrder={sortOrder}
             onSortChange={setSortField}
-            onOrderToggle={() => setSortOrder(o => o === 'asc' ? 'desc' : 'asc')}
+            onOrderToggle={() =>
+              setSortOrder((o) => (o === 'asc' ? 'desc' : 'asc'))
+            }
           />
 
           <ViewToggle view={view} onViewChange={setView} />
@@ -206,10 +234,9 @@ export default function SubscriptionsPage() {
             <RefreshCw className={cn('w-4 h-4', isLoading && 'animate-spin')} />
           </Button>
 
-          <Link href="/subscriptions/new">
-            <ShimmerButton className="flex items-center gap-2 px-4 py-2.5">
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Add New</span>
+          <Link href="/subscriptions/new" className="ml-auto">
+            <ShimmerButton className="flex items-center gap-2 h-10 px-4">
+              <span className="hidden sm:inline">+ Add New</span>
             </ShimmerButton>
           </Link>
         </div>
@@ -240,7 +267,9 @@ export default function SubscriptionsPage() {
           <EmptyState />
         ) : (
           <div className="flex flex-col items-center justify-center py-16">
-            <p className="text-gray-400 mb-4">No subscriptions match your filters</p>
+            <p className="text-gray-400 mb-4">
+              No subscriptions match your filters
+            </p>
             <button
               onClick={clearFilters}
               className="px-4 py-2 bg-[#1a1a1a] text-white rounded-lg hover:bg-[#2a2a2a] transition-colors"
@@ -253,11 +282,12 @@ export default function SubscriptionsPage() {
         <>
           {/* Results count */}
           <div className="mb-4 text-sm text-gray-500">
-            Showing {filteredAndSortedSubscriptions.length} of {subscriptions.length} subscriptions
+            Showing {filteredAndSortedSubscriptions.length} of{' '}
+            {subscriptions.length} subscriptions
           </div>
 
           {/* Subscription Grid/List */}
-          <motion.div 
+          <motion.div
             layout
             className={cn(
               view === 'grid'

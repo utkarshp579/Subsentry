@@ -1,96 +1,124 @@
-'use client';
+import { Card } from '@/components/ui/card';
+import { getServiceColors, getServiceIcon } from '@/lib/service-icons';
+import { getDaysUntilRenewal } from '@/lib/utils';
+import { format } from 'date-fns';
+import { AlertTriangle, Calendar } from 'lucide-react';
+import React from 'react';
 
-import { Subscription } from '@/lib/api';
-import { AlertTriangle, Clock } from 'lucide-react';
-
-function daysUntil(dateISO: string) {
-  const today = new Date();
-  const target = new Date(dateISO);
-
-  today.setHours(0, 0, 0, 0);
-  target.setHours(0, 0, 0, 0);
-
-  return Math.ceil((target.getTime() - today.getTime()) / 86400000);
+interface Subscription {
+  name: string;
+  renewalDate: string;
+  amount: number;
+  billingCycle: string;
+  isTrial?: boolean;
+  status: string;
 }
 
-function formatDate(dateISO: string) {
-  return new Date(dateISO).toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
-type Props = {
+interface UpcomingRenewalsProps {
   subscriptions: Subscription[];
+}
+
+const getUrgency = (days: number) => {
+  if (days <= 7) return 'urgent';
+  if (days <= 30) return 'soon';
+  return 'normal';
 };
 
-export default function UpcomingRenewals({ subscriptions }: Props) {
+const UpcomingRenewals: React.FC<UpcomingRenewalsProps> = ({
+  subscriptions,
+}) => {
   const upcoming = subscriptions
-    .filter(s => s.status === 'active')
-    .map(s => ({ ...s, daysLeft: daysUntil(s.renewalDate) }))
-    .filter(s => s.daysLeft >= 0 && s.daysLeft <= 30)
-    .sort((a, b) => a.daysLeft - b.daysLeft);
+    .filter((sub) => {
+      const days = getDaysUntilRenewal(sub.renewalDate);
+      return sub.status === 'active' && days >= 0 && days <= 30;
+    })
+    .sort(
+      (a, b) =>
+        new Date(a.renewalDate).getTime() - new Date(b.renewalDate).getTime()
+    );
 
   if (upcoming.length === 0) {
     return (
-      <div className="mb-8 rounded-2xl border border-white/10 bg-[#0b0f14] p-6">
-        <h3 className="mb-1 text-lg font-semibold text-white">
-          Upcoming Renewals
-        </h3>
-        <p className="text-sm text-gray-400">
-          No renewals in the next 30 days 🎉
-        </p>
-      </div>
+      <Card className="p-8 rounded-2xl bg-linear-to-br from-[#18181c] to-[#101010] border border-[#232323] text-center shadow-lg">
+        <span className="text-gray-400 text-base">
+          No upcoming renewals in the next 30 days.
+        </span>
+      </Card>
     );
   }
 
   return (
-    <section className="mb-8 rounded-2xl border border-white/10 bg-[#0b0f14] p-6">
-      <div className="mb-4 flex items-center gap-2">
-        <Clock className="h-5 w-5 text-amber-400" />
-        <h3 className="text-lg font-semibold text-white">
-          Upcoming Renewals
-        </h3>
+    <div className="mb-8">
+      <div className="flex items-center gap-2 mb-4">
+        <Calendar className="w-5 h-5 text-blue-400" />
+        <h3 className="text-lg font-semibold text-white">Upcoming Renewals</h3>
       </div>
-
-      <div className="space-y-3">
-        {upcoming.map(sub => {
-          const urgent = sub.daysLeft <= 7;
-
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {upcoming.map((sub) => {
+          const days = getDaysUntilRenewal(sub.renewalDate);
+          const urgency = getUrgency(days);
+          const icon = getServiceIcon(sub.name);
+          const colors = getServiceColors(sub.name);
           return (
-            <div
-              key={sub._id}
-              className={`flex items-center justify-between rounded-xl border p-4 ${
-                urgent
-                  ? 'border-red-500/30 bg-red-500/10'
-                  : 'border-amber-500/30 bg-amber-500/10'
-              }`}
+            <Card
+              key={sub.name + sub.renewalDate}
+              className={`flex items-center gap-6 p-6 rounded-2xl border shadow-lg transition-colors duration-200
+                ${
+                  urgency === 'urgent'
+                    ? 'border-amber-500/60 bg-linear-to-br from-amber-500/10 to-[#18181c]'
+                    : urgency === 'soon'
+                      ? 'border-blue-500/30 bg-linear-to-br from-blue-500/10 to-[#18181c]'
+                      : 'border-[#232323] bg-linear-to-br from-[#18181c] to-[#101010]'
+                }
+              `}
             >
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-white">{sub.name}</span>
-                  {urgent && (
-                    <span className="flex items-center gap-1 rounded-full bg-red-500/20 px-2 py-0.5 text-xs text-red-400">
-                      <AlertTriangle className="h-3 w-3" />
-                      Urgent
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                {icon && (
+                  <span
+                    className={`inline-flex items-center justify-center w-9 h-9 rounded-lg shadow ${colors?.bg ?? 'bg-[#232323]'}`}
+                  >
+                    <span className={`w-6 h-6 ${colors?.icon ?? 'text-white'}`}>
+                      {icon}
                     </span>
+                  </span>
+                )}
+                <div className="flex flex-col min-w-0">
+                  <span className="font-medium text-white truncate text-base">
+                    {sub.name}
+                  </span>
+                  <span className="text-xs text-gray-400 mt-1">
+                    {format(new Date(sub.renewalDate), 'MMM d, yyyy')} &bull;{' '}
+                    {sub.billingCycle}
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-col items-end">
+                <span className="font-semibold text-white text-lg">
+                  ₹{sub.amount}
+                </span>
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold mt-2
+                    ${
+                      urgency === 'urgent'
+                        ? 'bg-amber-500/20 text-amber-500'
+                        : urgency === 'soon'
+                          ? 'bg-blue-500/20 text-blue-400'
+                          : 'bg-[#232323] text-gray-400'
+                    }
+                  `}
+                >
+                  {urgency === 'urgent' && (
+                    <AlertTriangle className="w-4 h-4" />
                   )}
-                </div>
-                <div className="text-xs text-gray-400">
-                  Renews on {formatDate(sub.renewalDate)}
-                </div>
+                  Renews in {days} day{days !== 1 ? 's' : ''}
+                </span>
               </div>
-
-              <div className="text-sm font-semibold text-amber-400">
-                {sub.daysLeft === 0
-                  ? 'Renews today'
-                  : `Renews in ${sub.daysLeft} days`}
-              </div>
-            </div>
+            </Card>
           );
         })}
       </div>
-    </section>
+    </div>
   );
-}
+};
+
+export default UpcomingRenewals;
