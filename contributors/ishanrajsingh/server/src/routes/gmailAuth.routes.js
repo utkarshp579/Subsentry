@@ -6,7 +6,8 @@ import {
   gmailStatus,
   disconnectGmail,
   fetchEmails,
-  parseEmails
+  parseEmails,
+  saveSubscriptions,
 } from '../controllers/gmailAuthController.js';
 
 const router = Router();
@@ -17,5 +18,6 @@ router.get('/status', requireAuth, gmailStatus);
 router.post('/disconnect', requireAuth, disconnectGmail);
 router.get('/emails', requireAuth, fetchEmails);
 router.post('/parse', requireAuth, parseEmails);
+router.post('/save', requireAuth, saveSubscriptions);
 
 export default router;
