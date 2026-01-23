@@ -24,7 +24,10 @@ type EmailPreview = {
 
 export default function SettingsPage() {
   const { getToken } = useAuth();
-  const [gmailBanner, setGmailBanner] = useState<string | null>(null);
+  const [gmailNotice, setGmailNotice] = useState<{
+    message: string;
+    tone: 'success' | 'warning' | 'error';
+  } | null>(null);
   const [status, setStatus] = useState<GmailStatus | null>(null);
   const [emails, setEmails] = useState<EmailPreview[]>([]);
   const [parsedCount, setParsedCount] = useState<number | null>(null);
@@ -41,15 +44,37 @@ export default function SettingsPage() {
     const params = new URLSearchParams(window.location.search);
     const state = params.get('gmail');
     if (state === 'success') {
-      setGmailBanner('Gmail connected successfully.');
+      setGmailNotice({ message: 'Gmail connected successfully.', tone: 'success' });
     } else if (state === 'denied') {
-      setGmailBanner('Gmail access was denied.');
+      setGmailNotice({ message: 'Gmail access was denied.', tone: 'error' });
     } else if (state === 'error') {
-      setGmailBanner('Gmail connection failed. Try again.');
+      setGmailNotice({ message: 'Gmail connection failed. Try again.', tone: 'error' });
     } else {
-      setGmailBanner(null);
+      setGmailNotice(null);
     }
   }, []);
+
+  const handleInvalidToken = (message: string) => {
+    const normalized = message.toLowerCase();
+    const isInvalid =
+      normalized.includes('token is invalid') ||
+      normalized.includes('invalid encrypted token') ||
+      normalized.includes('unsupported state');
+
+    if (isInvalid) {
+      setGmailNotice({
+        message: 'Gmail token invalid or expired. Please disconnect and reconnect Gmail.',
+        tone: 'warning',
+      });
+      setStatus({ connected: false });
+      setEmails([]);
+      setParsedCount(null);
+      setSaveResult(null);
+      return true;
+    }
+
+    return false;
+  };
 
   const fetchStatus = async () => {
     setError(null);
@@ -77,9 +102,10 @@ export default function SettingsPage() {
         message: data.message,
       });
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to fetch Gmail status'
-      );
+      const message =
+        err instanceof Error ? err.message : 'Failed to fetch Gmail status';
+      setError(message);
+      handleInvalidToken(message);
     } finally {
       setBusy(null);
     }
@@ -109,7 +135,10 @@ export default function SettingsPage() {
 
       window.location.href = data.authUrl;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to connect Gmail');
+      const message =
+        err instanceof Error ? err.message : 'Failed to connect Gmail';
+      setError(message);
+      handleInvalidToken(message);
     } finally {
       setBusy(null);
     }
@@ -138,9 +167,10 @@ export default function SettingsPage() {
       setParsedCount(null);
       setSaveResult(null);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to disconnect Gmail'
-      );
+      const message =
+        err instanceof Error ? err.message : 'Failed to disconnect Gmail';
+      setError(message);
+      handleInvalidToken(message);
     } finally {
       setBusy(null);
     }
@@ -165,7 +195,10 @@ export default function SettingsPage() {
 
       setEmails(Array.isArray(data.emails) ? data.emails : []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch emails');
+      const message =
+        err instanceof Error ? err.message : 'Failed to fetch emails';
+      setError(message);
+      handleInvalidToken(message);
     } finally {
       setBusy(null);
     }
@@ -195,7 +228,10 @@ export default function SettingsPage() {
 
       setParsedCount(Array.isArray(data.parsed) ? data.parsed.length : 0);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to parse emails');
+      const message =
+        err instanceof Error ? err.message : 'Failed to parse emails';
+      setError(message);
+      handleInvalidToken(message);
     } finally {
       setBusy(null);
     }
@@ -229,9 +265,10 @@ export default function SettingsPage() {
         errors: data.errors ?? 0,
       });
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to save subscriptions'
-      );
+      const message =
+        err instanceof Error ? err.message : 'Failed to save subscriptions';
+      setError(message);
+      handleInvalidToken(message);
     } finally {
       setBusy(null);
     }
@@ -240,9 +277,17 @@ export default function SettingsPage() {
   return (
     <DashboardLayout title="Settings" subtitle="Gmail ingestion controls">
       <div className="space-y-6">
-        {gmailBanner && (
-          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-            {gmailBanner}
+        {gmailNotice && (
+          <div
+            className={
+              gmailNotice.tone === 'success'
+                ? 'rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200'
+                : gmailNotice.tone === 'warning'
+                  ? 'rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-200'
+                  : 'rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200'
+            }
+          >
+            {gmailNotice.message}
           </div>
         )}
 
