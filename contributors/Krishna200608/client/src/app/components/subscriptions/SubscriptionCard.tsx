@@ -8,7 +8,6 @@ import {
   getDaysUntilRenewal,
   isUrgentRenewal,
   getCategoryColor,
-  getStatusColor,
   getBillingCycleLabel,
   getSourceIcon,
 } from '@/lib/utils';
@@ -130,13 +129,13 @@ export default function SubscriptionCard({
                   Free Trial
                 </Badge>
               ) : null}
-              <span className="text-xs text-gray-500">{getSourceIcon(subscription.source)}</span>
+              <span className="text-xs text-gray-400">{getSourceIcon(subscription.source)}</span>
             </div>
             <div className="flex items-center gap-3 mt-1">
               <Badge variant="secondary" className={cn(categoryColors.bg, categoryColors.text, 'border-0')}>
                 {subscription.category}
               </Badge>
-              <span className="text-xs text-gray-500 capitalize">
+              <span className="text-xs text-gray-400 capitalize">
                 {isTrial ? 'Trial Period' : getBillingCycleLabel(subscription.billingCycle)}
               </span>
             </div>
@@ -147,7 +146,7 @@ export default function SubscriptionCard({
             <div className="font-semibold text-white">
               {formatCurrency(subscription.amount, subscription.currency)}
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-gray-400">
               {isTrial ? 'after trial' : `/${subscription.billingCycle === 'yearly' ? 'year' : subscription.billingCycle === 'weekly' ? 'week' : 'month'}`}
             </div>
           </div>
@@ -163,7 +162,7 @@ export default function SubscriptionCard({
                   {isTrialEndingSoon ? <Clock className="w-3.5 h-3.5 animate-pulse" /> : isUrgent && <AlertTriangle className="w-3.5 h-3.5 animate-pulse" />}
                   <span className="text-sm font-medium">{getRenewalText()}</span>
                 </div>
-                <div className="text-xs text-gray-500">{formatDate(subscription.renewalDate)}</div>
+                <div className="text-xs text-gray-400">{formatDate(subscription.renewalDate)}</div>
               </div>
             </TooltipTrigger>
             <TooltipContent>
@@ -330,7 +329,7 @@ export default function SubscriptionCard({
             <Badge variant="secondary" className={cn(categoryColors.bg, categoryColors.text, 'border-0')}>
               {subscription.category}
             </Badge>
-            <span className="text-xs text-gray-500">{getSourceIcon(subscription.source)}</span>
+            <span className="text-xs text-gray-400">{getSourceIcon(subscription.source)}</span>
           </div>
         </div>
 
@@ -345,7 +344,7 @@ export default function SubscriptionCard({
             {formatCurrency(subscription.amount, subscription.currency)}
             {isTrial && <span className="text-xs font-normal text-gray-400">/mo</span>}
           </motion.div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-400">
             {isTrial ? 'Starts after trial' : getBillingCycleLabel(subscription.billingCycle)}
           </div>
         </div>
