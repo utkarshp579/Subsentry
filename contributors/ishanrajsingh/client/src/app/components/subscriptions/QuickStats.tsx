@@ -1,23 +1,29 @@
 'use client';
 
 import { Subscription } from '@/lib/api';
-import { formatCurrency, isUrgentRenewal, getDaysUntilRenewal } from '@/lib/utils';
+import { convertCurrency, formatCurrency, isUrgentRenewal, getDaysUntilRenewal } from '@/lib/utils';
 import { DollarSign, CreditCard, AlertTriangle, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { SpotlightCard, AnimatedCounter } from '@/components/ui/aceternity';
 
 interface QuickStatsProps {
   subscriptions: Subscription[];
+  displayCurrency: string;
 }
 
-export default function QuickStats({ subscriptions }: QuickStatsProps) {
+export default function QuickStats({ subscriptions, displayCurrency }: QuickStatsProps) {
   const activeSubscriptions = subscriptions.filter(s => s.status === 'active');
-  
+
   const monthlyTotal = activeSubscriptions.reduce((sum, sub) => {
-    if (sub.billingCycle === 'monthly') return sum + sub.amount;
-    if (sub.billingCycle === 'yearly') return sum + (sub.amount / 12);
-    if (sub.billingCycle === 'weekly') return sum + (sub.amount * 4.33);
-    return sum + sub.amount;
+    const amountInDisplay = convertCurrency(
+      sub.amount,
+      sub.currency || 'USD',
+      displayCurrency
+    );
+    if (sub.billingCycle === 'monthly') return sum + amountInDisplay;
+    if (sub.billingCycle === 'yearly') return sum + (amountInDisplay / 12);
+    if (sub.billingCycle === 'weekly') return sum + (amountInDisplay * 4.33);
+    return sum + amountInDisplay;
   }, 0);
 
   const yearlyTotal = monthlyTotal * 12;
@@ -34,12 +40,12 @@ export default function QuickStats({ subscriptions }: QuickStatsProps) {
     {
       label: 'Monthly Spend',
       value: monthlyTotal,
-      displayValue: formatCurrency(monthlyTotal),
+      displayValue: formatCurrency(monthlyTotal, displayCurrency),
       icon: DollarSign,
       iconBg: 'bg-blue-500/20',
       iconColor: 'text-blue-400',
       spotlightColor: 'rgba(59, 130, 246, 0.15)',
-      change: `${formatCurrency(yearlyTotal)}/year`,
+      change: `${formatCurrency(yearlyTotal, displayCurrency)}/year`,
       isMonetary: true,
     },
     {
@@ -80,7 +86,7 @@ export default function QuickStats({ subscriptions }: QuickStatsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (
@@ -95,7 +101,7 @@ export default function QuickStats({ subscriptions }: QuickStatsProps) {
               transition={{ delay: index * 0.1 }}
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
                   {stat.label}
                 </span>
                 <motion.div 
@@ -114,7 +120,7 @@ export default function QuickStats({ subscriptions }: QuickStatsProps) {
                   <AnimatedCounter value={stat.value} duration={0.8} />
                 )}
               </div>
-              <div className={`text-xs ${stat.highlight ? stat.iconColor : 'text-gray-500'}`}>
+              <div className={`text-xs ${stat.highlight ? stat.iconColor : 'text-gray-400'}`}>
                 {stat.change}
               </div>
             </motion.div>
