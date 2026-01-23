@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 
@@ -9,7 +9,6 @@ const INTRO_STORAGE_KEY = 'subsentry_intro_seen';
 
 export default function Home() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { isLoaded, isSignedIn } = useUser();
   const [showIntro, setShowIntro] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
@@ -24,12 +23,13 @@ export default function Home() {
       return;
     }
 
-    const forceIntro = searchParams?.get('intro') === '1';
+    const params = new URLSearchParams(window.location.search);
+    const forceIntro = params.get('intro') === '1';
     const seen = window.localStorage.getItem(INTRO_STORAGE_KEY);
     if (forceIntro || !seen) {
       setShowIntro(true);
     }
-  }, [isLoaded, isSignedIn, router, searchParams]);
+  }, [isLoaded, isSignedIn, router]);
 
   const finishIntro = useCallback(() => {
     if (typeof window !== 'undefined') {

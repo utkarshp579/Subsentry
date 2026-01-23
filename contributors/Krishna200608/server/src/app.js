@@ -18,4 +18,3 @@ app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/gmail', gmailRoutes);
 
 export default app;
-
