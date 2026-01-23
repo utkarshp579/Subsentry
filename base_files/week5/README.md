@@ -102,3 +102,6 @@ npm run dev
 ```
 
 > Tip: copy `base_files/week5/server/envExample` to `.env` and fill Google OAuth values before starting the server.
+
+## Notes
+- Totals on Dashboard/Subscriptions can be displayed in USD/INR/EUR/GBP using the conversion table in `base_files/week5/client/src/lib/utils.ts`. Update rates as needed.
