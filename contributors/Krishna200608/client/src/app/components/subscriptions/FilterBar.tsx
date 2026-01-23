@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 
-export type FilterStatus = 'all' | 'active' | 'paused' | 'cancelled';
+export type FilterStatus = 'all' | 'active' | 'paused' | 'cancelled' | 'trial';
 export type FilterBillingCycle = 'all' | 'monthly' | 'yearly' | 'weekly' | 'custom';
 export type FilterCategory = 'all' | 'entertainment' | 'music' | 'education' | 'productivity' | 'finance' | 'health' | 'other';
 
@@ -33,6 +33,7 @@ interface FilterBarProps {
 const statusOptions: { value: FilterStatus; label: string }[] = [
   { value: 'all', label: 'All Status' },
   { value: 'active', label: 'Active' },
+  { value: 'trial', label: 'Trial' },
   { value: 'paused', label: 'Paused' },
   { value: 'cancelled', label: 'Cancelled' },
 ];
@@ -56,6 +57,74 @@ const categoryOptions: { value: FilterCategory; label: string }[] = [
   { value: 'other', label: 'Other' },
 ];
 
+const PillFilter = ({
+  options,
+  value,
+  onChange,
+  label
+}: {
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (val: string) => void;
+  label: string;
+}) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className={cn(
+          'flex items-center gap-2 px-3 py-2 text-sm rounded-full border transition-all',
+          value !== 'all'
+            ? 'bg-blue-500/10 border-blue-500/50 text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.2)]'
+            : 'bg-[#0f0f0f] border-[#2a2a2a] text-gray-300 hover:border-[#3a3a3a]'
+        )}
+      >
+        {options.find(o => o.value === value)?.label || label}
+        <ChevronDown className="w-3 h-3" />
+      </motion.button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="start" className="w-48">
+      <DropdownMenuLabel>{label}</DropdownMenuLabel>
+      <DropdownMenuSeparator />
+      <DropdownMenuRadioGroup value={value} onValueChange={onChange}>
+        {options.map((option) => (
+          <DropdownMenuRadioItem key={option.value} value={option.value}>
+            {option.label}
+          </DropdownMenuRadioItem>
+        ))}
+      </DropdownMenuRadioGroup>
+    </DropdownMenuContent>
+  </DropdownMenu>
+);
+
+const StatusPills = ({
+  statusFilter,
+  onStatusChange
+}: {
+  statusFilter: FilterStatus;
+  onStatusChange: (status: FilterStatus) => void;
+}) => (
+  <div className="flex items-center gap-1 p-1 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a]">
+    {statusOptions.map((option) => (
+      <motion.button
+        key={option.value}
+        onClick={() => onStatusChange(option.value)}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className={cn(
+          'px-3 py-1.5 text-sm rounded-lg transition-all',
+          statusFilter === option.value
+            ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white shadow-sm'
+            : 'text-gray-400 hover:text-white hover:bg-[#1a1a1a]'
+        )}
+      >
+        {option.label === 'All Status' ? 'All' : option.label}
+      </motion.button>
+    ))}
+  </div>
+);
+
 export default function FilterBar({
   statusFilter,
   billingCycleFilter,
@@ -68,69 +137,6 @@ export default function FilterBar({
 }: FilterBarProps) {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  const PillFilter = ({ 
-    options, 
-    value, 
-    onChange, 
-    label 
-  }: { 
-    options: { value: string; label: string }[]; 
-    value: string; 
-    onChange: (val: string) => void;
-    label: string;
-  }) => (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className={cn(
-            'flex items-center gap-2 px-3 py-2 text-sm rounded-full border transition-all',
-            value !== 'all'
-              ? 'bg-blue-500/10 border-blue-500/50 text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.2)]'
-              : 'bg-[#0f0f0f] border-[#2a2a2a] text-gray-300 hover:border-[#3a3a3a]'
-          )}
-        >
-          {options.find(o => o.value === value)?.label || label}
-          <ChevronDown className="w-3 h-3" />
-        </motion.button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-48">
-        <DropdownMenuLabel>{label}</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuRadioGroup value={value} onValueChange={onChange}>
-          {options.map((option) => (
-            <DropdownMenuRadioItem key={option.value} value={option.value}>
-              {option.label}
-            </DropdownMenuRadioItem>
-          ))}
-        </DropdownMenuRadioGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-
-  // Quick Status Pills
-  const StatusPills = () => (
-    <div className="flex items-center gap-1 p-1 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a]">
-      {statusOptions.map((option) => (
-        <motion.button
-          key={option.value}
-          onClick={() => onStatusChange(option.value)}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className={cn(
-            'px-3 py-1.5 text-sm rounded-lg transition-all',
-            statusFilter === option.value
-              ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white shadow-sm'
-              : 'text-gray-400 hover:text-white hover:bg-[#1a1a1a]'
-          )}
-        >
-          {option.label === 'All Status' ? 'All' : option.label}
-        </motion.button>
-      ))}
-    </div>
-  );
-
   return (
     <div className="space-y-3">
       {/* Desktop Filters */}
@@ -141,7 +147,7 @@ export default function FilterBar({
         </div>
 
         {/* Status Pills - Quick Access */}
-        <StatusPills />
+        <StatusPills statusFilter={statusFilter} onStatusChange={onStatusChange} />
 
         {/* Billing Cycle Dropdown */}
         <PillFilter
