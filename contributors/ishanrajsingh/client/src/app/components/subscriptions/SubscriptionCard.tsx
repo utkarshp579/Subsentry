@@ -8,7 +8,6 @@ import {
   getDaysUntilRenewal,
   isUrgentRenewal,
   getCategoryColor,
-  getStatusColor,
   getBillingCycleLabel,
   getSourceIcon,
 } from '@/lib/utils';
@@ -21,6 +20,7 @@ import {
   Pause,
   Trash2,
   Edit,
+  Clock,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
@@ -56,7 +56,9 @@ export default function SubscriptionCard({
   const daysUntil = getDaysUntilRenewal(subscription.renewalDate);
   const isUrgent = isUrgentRenewal(subscription.renewalDate);
   const categoryColors = getCategoryColor(subscription.category);
-  const statusColors = getStatusColor(subscription.status);
+  
+  const isTrial = subscription.isTrial;
+  const isTrialEndingSoon = isTrial && daysUntil <= 3 && daysUntil >= 0;
   
   // Get service-specific icon and colors
   const serviceIcon = getServiceIcon(subscription.name);
@@ -74,11 +76,21 @@ export default function SubscriptionCard({
   const iconText = serviceColors?.text || categoryColors.text;
 
   const getRenewalText = () => {
-    if (daysUntil < 0) return 'Overdue';
-    if (daysUntil === 0) return 'Today';
-    if (daysUntil === 1) return 'Tomorrow';
-    return `${daysUntil} days`;
+    if (daysUntil < 0) return isTrial ? 'Trial Expired' : 'Overdue';
+    if (daysUntil === 0) return isTrial ? 'Trial Ends Today' : 'Today';
+    if (daysUntil === 1) return isTrial ? 'Trial Ends Tomorrow' : 'Tomorrow';
+    return isTrial ? `${daysUntil} days left` : `${daysUntil} days`;
   };
+
+  const borderColor = isTrialEndingSoon
+    ? 'border-amber-500/50 hover:border-amber-500'
+    : isUrgent
+      ? 'border-amber-500/30 hover:border-amber-500/50'
+      : 'border-[#1a1a1a] hover:border-[#2a2a2a]';
+
+  const glowStyles = isTrialEndingSoon
+    ? 'shadow-[0_0_15px_-3px_rgba(245,158,11,0.2)] hover:shadow-[0_0_20px_-3px_rgba(245,158,11,0.3)]'
+    : '';
 
   if (view === 'list') {
     return (
@@ -90,7 +102,8 @@ export default function SubscriptionCard({
           whileHover={{ scale: 1.01, x: 4 }}
           className={cn(
             'group flex items-center gap-4 p-4 bg-[#0f0f0f] rounded-xl border transition-all duration-200 hover:bg-[#141414]',
-            isUrgent ? 'border-amber-500/30 hover:border-amber-500/50' : 'border-[#1a1a1a] hover:border-[#2a2a2a]'
+            borderColor,
+            glowStyles
           )}
         >
           {/* Icon/Logo */}
@@ -110,17 +123,22 @@ export default function SubscriptionCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="font-semibold text-white truncate">{subscription.name}</h3>
-              {subscription.isTrial && (
-                <Badge variant="warning" className="text-[10px]">Trial</Badge>
-              )}
-              <span className="text-xs text-gray-500">{getSourceIcon(subscription.source)}</span>
+              {isTrial ? (
+                <Badge
+                  variant={isTrialEndingSoon ? 'warning' : 'secondary'}
+                  className="text-[10px] uppercase tracking-wider font-bold h-5"
+                >
+                  Free Trial
+                </Badge>
+              ) : null}
+              <span className="text-xs text-gray-400">{getSourceIcon(subscription.source)}</span>
             </div>
             <div className="flex items-center gap-3 mt-1">
               <Badge variant="secondary" className={cn(categoryColors.bg, categoryColors.text, 'border-0')}>
                 {subscription.category}
               </Badge>
-              <span className="text-xs text-gray-500">
-                {getBillingCycleLabel(subscription.billingCycle)}
+              <span className="text-xs text-gray-400 capitalize">
+                {isTrial ? 'Trial Period' : getBillingCycleLabel(subscription.billingCycle)}
               </span>
             </div>
           </div>
@@ -130,8 +148,10 @@ export default function SubscriptionCard({
             <div className="font-semibold text-white">
               {formatCurrency(subscription.amount, subscription.currency)}
             </div>
-            <div className="text-xs text-gray-500">
-              /{subscription.billingCycle === 'yearly' ? 'year' : subscription.billingCycle === 'weekly' ? 'week' : 'month'}
+            <div className="text-xs text-gray-400">
+              {isTrial
+                ? 'after trial'
+                : `/${subscription.billingCycle === 'yearly' ? 'year' : subscription.billingCycle === 'weekly' ? 'week' : 'month'}`}
             </div>
           </div>
 
@@ -139,27 +159,39 @@ export default function SubscriptionCard({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className={cn(
-                'text-right hidden md:block cursor-help',
-                isUrgent ? 'text-amber-400' : 'text-gray-400'
+                'text-right hidden md:block cursor-help min-w-[100px]',
+                isTrialEndingSoon ? 'text-amber-400' : isUrgent ? 'text-amber-400' : 'text-gray-400'
               )}>
                 <div className="flex items-center gap-1.5 justify-end">
-                  {isUrgent && <AlertTriangle className="w-3.5 h-3.5 animate-pulse" />}
+                  {isTrialEndingSoon ? (
+                    <Clock className="w-3.5 h-3.5 animate-pulse" />
+                  ) : (
+                    isUrgent && <AlertTriangle className="w-3.5 h-3.5 animate-pulse" />
+                  )}
                   <span className="text-sm font-medium">{getRenewalText()}</span>
                 </div>
-                <div className="text-xs text-gray-500">{formatDate(subscription.renewalDate)}</div>
+                <div className="text-xs text-gray-400">{formatDate(subscription.renewalDate)}</div>
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Next billing: {formatDate(subscription.renewalDate)}</p>
+              <p>{isTrial ? 'Trial ends on:' : 'Next billing:'} {formatDate(subscription.renewalDate)}</p>
             </TooltipContent>
           </Tooltip>
 
           {/* Status Badge */}
           <Badge 
-            variant={subscription.status === 'active' ? 'success' : subscription.status === 'cancelled' ? 'destructive' : 'secondary'}
-            className="hidden lg:flex capitalize"
+            variant={
+              isTrial
+                ? 'secondary'
+                : subscription.status === 'active'
+                  ? 'success'
+                  : subscription.status === 'cancelled'
+                    ? 'destructive'
+                    : 'secondary'
+            }
+            className={cn('hidden lg:flex capitalize', isTrial && 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20')}
           >
-            {subscription.status}
+            {isTrial ? 'Trial Active' : subscription.status}
           </Badge>
 
           {/* Actions with Radix Dropdown */}
@@ -207,14 +239,22 @@ export default function SubscriptionCard({
         whileHover={{ scale: 1.02, y: -4 }}
         className={cn(
           'group relative p-5 bg-[#0f0f0f] rounded-xl border transition-all duration-200 hover:shadow-xl hover:shadow-black/30',
-          isUrgent ? 'border-amber-500/30 hover:border-amber-500/50' : 'border-[#1a1a1a] hover:border-[#2a2a2a]'
+          borderColor,
+          glowStyles
         )}
       >
         {/* Spotlight effect on hover */}
         <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
         {/* Urgent Banner */}
-        {isUrgent && (
+        {isTrialEndingSoon && (
+          <motion.div 
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            className="absolute -top-px left-4 right-4 h-1 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-b-full origin-left shadow-[0_2px_10px_rgba(245,158,11,0.5)]" 
+          />
+        )}
+        {!isTrialEndingSoon && isUrgent && (
           <motion.div 
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
@@ -237,12 +277,24 @@ export default function SubscriptionCard({
           </motion.div>
 
           <div className="flex items-center gap-2">
-            <Badge 
-              variant={subscription.status === 'active' ? 'success' : subscription.status === 'cancelled' ? 'destructive' : 'secondary'}
-              className="capitalize"
-            >
-              {subscription.status}
-            </Badge>
+            {isTrial ? (
+              <Badge
+                variant="secondary"
+                className={cn(
+                  'capitalize border-blue-500/20 text-blue-400 bg-blue-500/10',
+                  isTrialEndingSoon && 'animate-pulse border-amber-500/30 text-amber-400 bg-amber-500/10'
+                )}
+              >
+                Trial
+              </Badge>
+            ) : (
+              <Badge 
+                variant={subscription.status === 'active' ? 'success' : subscription.status === 'cancelled' ? 'destructive' : 'secondary'}
+                className="capitalize"
+              >
+                {subscription.status}
+              </Badge>
+            )}
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -280,9 +332,7 @@ export default function SubscriptionCard({
         <div className="relative mb-4">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="font-semibold text-white truncate">{subscription.name}</h3>
-            {subscription.isTrial && (
-              <Badge variant="warning" className="text-[10px] shrink-0">Trial</Badge>
-            )}
+            {isTrial && <Badge variant="warning" className="text-[10px] shrink-0">FREE TRIAL</Badge>}
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className={cn(categoryColors.bg, categoryColors.text, 'border-0')}>
@@ -295,15 +345,16 @@ export default function SubscriptionCard({
         {/* Price */}
         <div className="relative mb-4">
           <motion.div 
-            className="text-2xl font-bold text-white"
+            className="text-2xl font-bold text-white flex items-baseline gap-1"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: index * 0.05 + 0.2 }}
           >
             {formatCurrency(subscription.amount, subscription.currency)}
+            {isTrial && <span className="text-xs font-normal text-gray-400">/mo</span>}
           </motion.div>
-          <div className="text-sm text-gray-500">
-            {getBillingCycleLabel(subscription.billingCycle)}
+          <div className="text-sm text-gray-400">
+            {isTrial ? 'Starts after trial' : getBillingCycleLabel(subscription.billingCycle)}
           </div>
         </div>
 
@@ -312,23 +363,25 @@ export default function SubscriptionCard({
           <TooltipTrigger asChild>
             <div className={cn(
               'relative flex items-center justify-between pt-4 border-t border-[#1a1a1a] cursor-help',
-              isUrgent ? 'text-amber-400' : 'text-gray-400'
+              isTrialEndingSoon ? 'text-amber-400 font-medium' : isUrgent ? 'text-amber-400' : 'text-gray-400'
             )}>
               <div className="flex items-center gap-2">
-                {isUrgent ? (
+                {isTrialEndingSoon ? (
+                  <Clock className="w-4 h-4 animate-pulse" />
+                ) : isUrgent ? (
                   <AlertTriangle className="w-4 h-4 animate-pulse" />
                 ) : (
                   <Calendar className="w-4 h-4" />
                 )}
                 <span className="text-sm">
-                  {isUrgent ? 'Renews ' : ''}{getRenewalText()}
+                  {getRenewalText()}
                 </span>
               </div>
-              <span className="text-xs text-gray-500">{formatDate(subscription.renewalDate)}</span>
+              <span className="text-xs opacity-80">{formatDate(subscription.renewalDate)}</span>
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Next billing date: {formatDate(subscription.renewalDate)}</p>
+            <p>{isTrial ? 'Trial ends on:' : 'Next billing date:'} {formatDate(subscription.renewalDate)}</p>
           </TooltipContent>
         </Tooltip>
       </motion.div>

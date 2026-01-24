@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { getServiceColors, getServiceIcon } from '@/lib/service-icons';
-import { getDaysUntilRenewal } from '@/lib/utils';
+import { convertCurrency, formatCurrency, getDaysUntilRenewal } from '@/lib/utils';
 import { format } from 'date-fns';
 import { AlertTriangle, Calendar } from 'lucide-react';
 import React from 'react';
@@ -9,6 +9,7 @@ interface Subscription {
   name: string;
   renewalDate: string;
   amount: number;
+  currency?: string;
   billingCycle: string;
   isTrial?: boolean;
   status: string;
@@ -16,6 +17,7 @@ interface Subscription {
 
 interface UpcomingRenewalsProps {
   subscriptions: Subscription[];
+  displayCurrency: string;
 }
 
 const getUrgency = (days: number) => {
@@ -26,6 +28,7 @@ const getUrgency = (days: number) => {
 
 const UpcomingRenewals: React.FC<UpcomingRenewalsProps> = ({
   subscriptions,
+  displayCurrency,
 }) => {
   const upcoming = subscriptions
     .filter((sub) => {
@@ -94,7 +97,14 @@ const UpcomingRenewals: React.FC<UpcomingRenewalsProps> = ({
               </div>
               <div className="flex flex-col items-end">
                 <span className="font-semibold text-white text-lg">
-                  ₹{sub.amount}
+                  {formatCurrency(
+                    convertCurrency(
+                      sub.amount,
+                      sub.currency || 'USD',
+                      displayCurrency
+                    ),
+                    displayCurrency
+                  )}
                 </span>
                 <span
                   className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold mt-2

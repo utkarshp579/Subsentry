@@ -1,3 +1,11 @@
+/**
+ * Email Parser Service
+ * Extracts subscription data from email metadata using rule-based parsing
+ * 
+ * Note: Accuracy is not expected to be perfect — users can edit later
+ */
+
+// Common subscription service patterns
 const KNOWN_SERVICES = [
     { pattern: /netflix/i, name: 'Netflix' },
     { pattern: /spotify/i, name: 'Spotify' },
@@ -23,12 +31,14 @@ const KNOWN_SERVICES = [
     { pattern: /nintendo/i, name: 'Nintendo' },
 ];
 
+// Billing cycle patterns
 const BILLING_PATTERNS = {
     monthly: /monthly|per\s*month|\/month|\/mo|each\s*month/i,
     yearly: /yearly|annual|per\s*year|\/year|\/yr|each\s*year/i,
     weekly: /weekly|per\s*week|\/week|each\s*week/i,
 };
 
+// Transaction type patterns
 const TRANSACTION_PATTERNS = {
     renewal: /renewal|renewed|renewing|auto.?renew/i,
     payment: /payment|paid|charged|charge|transaction/i,
@@ -38,33 +48,42 @@ const TRANSACTION_PATTERNS = {
     cancelled: /cancel|cancelled|canceled/i,
 };
 
+// Amount extraction patterns (supports multiple currencies)
 const AMOUNT_PATTERNS = [
-    /\$\s*(\d+(?:[.,]\d{1,2})?)/,
-    /(\d+(?:[.,]\d{1,2})?)\s*(?:USD|dollars?)/i,
-    /₹\s*(\d+(?:[.,]\d{1,2})?)/,
-    /(\d+(?:[.,]\d{1,2})?)\s*(?:INR|rupees?)/i,
-    /€\s*(\d+(?:[.,]\d{1,2})?)/,
-    /(\d+(?:[.,]\d{1,2})?)\s*(?:EUR|euros?)/i,
-    /£\s*(\d+(?:[.,]\d{1,2})?)/,
-    /(\d+(?:[.,]\d{1,2})?)\s*(?:GBP|pounds?)/i,
+    /\$\s*(\d+(?:[.,]\d{1,2})?)/,           // $9.99
+    /(\d+(?:[.,]\d{1,2})?)\s*(?:USD|dollars?)/i,  // 9.99 USD
+    /₹\s*(\d+(?:[.,]\d{1,2})?)/,            // ₹199
+    /(\d+(?:[.,]\d{1,2})?)\s*(?:INR|rupees?)/i,   // 199 INR
+    /€\s*(\d+(?:[.,]\d{1,2})?)/,            // €9.99
+    /(\d+(?:[.,]\d{1,2})?)\s*(?:EUR|euros?)/i,    // 9.99 EUR
+    /£\s*(\d+(?:[.,]\d{1,2})?)/,            // £9.99
+    /(\d+(?:[.,]\d{1,2})?)\s*(?:GBP|pounds?)/i,   // 9.99 GBP
 ];
 
-
+/**
+ * Extract service name from email sender and subject
+ * @param {string} sender - Email sender (e.g., "Netflix <info@netflix.com>")
+ * @param {string} subject - Email subject
+ */
 const extractServiceName = (sender = '', subject = '') => {
     const combined = `${sender} ${subject}`;
 
+    // Try known services first
     for (const service of KNOWN_SERVICES) {
         if (service.pattern.test(combined)) {
             return service.name;
         }
     }
 
+    // Extract from email domain
     const emailMatch = sender.match(/@([a-z0-9.-]+)\./i);
     if (emailMatch) {
         const domain = emailMatch[1];
+        // Capitalize first letter
         return domain.charAt(0).toUpperCase() + domain.slice(1);
     }
 
+    // Extract from sender name
     const nameMatch = sender.match(/^([^<]+)/);
     if (nameMatch) {
         return nameMatch[1].trim();
@@ -73,6 +92,10 @@ const extractServiceName = (sender = '', subject = '') => {
     return null;
 };
 
+/**
+ * Detect billing cycle from email content
+ * @param {string} text - Combined email text
+ */
 const detectBillingCycle = (text = '') => {
     for (const [cycle, pattern] of Object.entries(BILLING_PATTERNS)) {
         if (pattern.test(text)) {
@@ -82,6 +105,10 @@ const detectBillingCycle = (text = '') => {
     return null;
 };
 
+/**
+ * Detect transaction type from email content
+ * @param {string} text - Combined email text
+ */
 const detectTransactionType = (text = '') => {
     const types = [];
     for (const [type, pattern] of Object.entries(TRANSACTION_PATTERNS)) {
@@ -92,6 +119,10 @@ const detectTransactionType = (text = '') => {
     return types.length > 0 ? types : ['unknown'];
 };
 
+/**
+ * Extract amount from email content
+ * @param {string} text - Combined email text
+ */
 const extractAmount = (text = '') => {
     for (const pattern of AMOUNT_PATTERNS) {
         const match = text.match(pattern);
@@ -114,12 +145,18 @@ const extractAmount = (text = '') => {
     return null;
 };
 
+/**
+ * Parse a single email for subscription data
+ * @param {Object} email - Email object with subject, sender, snippet
+ */
 export const parseEmail = (email) => {
     try {
         const { messageId, subject = '', sender = '', snippet = '', timestamp } = email;
 
+        // Combine all text for analysis
         const combinedText = `${subject} ${snippet}`;
 
+        // Extract data
         const serviceName = extractServiceName(sender, subject);
         const billingCycle = detectBillingCycle(combinedText);
         const transactionTypes = detectTransactionType(combinedText);
@@ -139,6 +176,7 @@ export const parseEmail = (email) => {
             confidence: calculateConfidence({ serviceName, billingCycle, amountData }),
         };
     } catch (error) {
+        // Never crash - return partial data
         return {
             messageId: email?.messageId,
             parsed: false,
@@ -149,6 +187,9 @@ export const parseEmail = (email) => {
     }
 };
 
+/**
+ * Calculate confidence score based on extracted data
+ */
 const calculateConfidence = ({ serviceName, billingCycle, amountData }) => {
     let score = 0;
     if (serviceName) score += 40;
@@ -157,11 +198,18 @@ const calculateConfidence = ({ serviceName, billingCycle, amountData }) => {
     return score;
 };
 
-
+/**
+ * Parse multiple emails
+ * @param {Array} emails - Array of email objects
+ */
 export const parseEmails = (emails = []) => {
     return emails.map(email => parseEmail(email));
 };
 
+/**
+ * Parse and group by service
+ * @param {Array} emails - Array of email objects
+ */
 export const parseAndGroupByService = (emails = []) => {
     const parsed = parseEmails(emails);
     const grouped = {};

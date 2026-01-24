@@ -1,55 +1,40 @@
-import mongoose from 'mongoose';
+import { Schema, model } from 'mongoose';
 
-const { Schema, model } = mongoose;
-
-export default mongoose.model("GmailToken", gmailTokenSchema);
-import mongoose from 'mongoose';
-
-const { Schema, model } = mongoose;
-
-const GmailOAuthSchema = new Schema(
-  {
-    userId: {
-      type: String,
-      required: true,
-      index: true,
-      unique: true,
+/**
+ * GmailToken Model
+ * Stores encrypted OAuth tokens for Gmail integration
+ * Tokens are encrypted at rest for security
+ */
+const gmailTokenSchema = new Schema(
+    {
+        userId: {
+            type: String,
+            required: true,
+            unique: true,
+            index: true,
+        },
+        email: {
+            type: String,
+            required: true,
+        },
+        accessToken: {
+            type: String,
+            required: true,
+        },
+        refreshToken: {
+            type: String,
+            required: true,
+        },
+        expiresAt: {
+            type: Date,
+            required: true,
+        },
+        connectedAt: {
+            type: Date,
+            default: Date.now,
+        },
     },
-
-    gmailAddress: {
-      type: String,
-      required: true,
-      lowercase: true,
-      trim: true,
-    },
-
-    encryptedAccessToken: {
-      type: String,
-      required: true,
-    },
-
-    encryptedRefreshToken: {
-      type: String,
-      required: true,
-    },
-
-    accessTokenExpiresAt: {
-      type: Date,
-      required: true,
-    },
-
-    connectedOn: {
-      type: Date,
-      default: Date.now,
-    },
-  },
-  {
-    timestamps: true,
-    versionKey: false,
-  }
+    { timestamps: true }
 );
 
-
-GmailOAuthSchema.index({ userId: 1 });
-
-export const GmailToken = model('GmailToken', GmailOAuthSchema);
+export const GmailToken = model('GmailToken', gmailTokenSchema);

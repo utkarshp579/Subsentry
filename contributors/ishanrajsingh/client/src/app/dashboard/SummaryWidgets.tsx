@@ -1,50 +1,21 @@
+'use client';
+
 import { Card } from '@/components/ui/card';
-import { useAuth } from '@clerk/nextjs';
+import { convertCurrency, formatCurrency } from '@/lib/utils';
 import { Calendar, CreditCard, TrendingUp, Zap } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface Subscription {
   amount: number;
+  currency?: string;
   billingCycle: 'monthly' | 'yearly' | string;
   status: string;
   isTrial?: boolean;
 }
 
-type Metrics = {
-  monthlySpend: number;
-  yearlySpend: number;
-  activeCount: number;
-  trialCount: number;
-};
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-
-const fetchMetrics = async (
-  token: string | null | undefined
-): Promise<Metrics> => {
-  const headers: Record<string, string> = {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-
-  const res = await fetch(`${API_BASE_URL}/api/subscriptions`, { headers });
-  const data = await res.json();
-
-  const subs = Array.isArray(data.data) ? data.data : [];
-  const meta = data.meta || {};
-
-  const monthlySpend =
-    typeof meta.monthlySpend === 'number' ? meta.monthlySpend : 0;
-  const yearlySpend =
-    typeof meta.yearlySpend === 'number' ? meta.yearlySpend : 0;
-
-  let activeCount = 0;
-  let trialCount = 0;
-
-  subs.forEach((sub: Subscription) => {
-    if (sub.status === 'active') activeCount++;
-    if (sub.isTrial) trialCount++;
-  });
-
-  return { monthlySpend, yearlySpend, activeCount, trialCount };
+interface SummaryWidgetsProps {
+  subscriptions: Subscription[];
+  displayCurrency: string;
 };
 
 // CountUp hook
@@ -73,26 +44,37 @@ function useCountUp(target: number, duration = 1000) {
   return value;
 }
 
-const SummaryWidgets = () => {
-  const [metrics, setMetrics] = useState<Metrics | null>(null);
-  const { getToken } = useAuth();
+const SummaryWidgets = ({ subscriptions, displayCurrency }: SummaryWidgetsProps) => {
+  const metrics = useMemo(() => {
+    const activeSubscriptions = subscriptions.filter((s) => s.status === 'active');
+    const monthlySpend = activeSubscriptions.reduce((sum, sub) => {
+      const amountInDisplay = convertCurrency(
+        sub.amount,
+        sub.currency || 'USD',
+        displayCurrency
+      );
+      if (sub.billingCycle === 'monthly') return sum + amountInDisplay;
+      if (sub.billingCycle === 'yearly') return sum + amountInDisplay / 12;
+      if (sub.billingCycle === 'weekly') return sum + amountInDisplay * 4.33;
+      return sum + amountInDisplay;
+    }, 0);
 
-  useEffect(() => {
-    (async () => {
-      const token = await getToken?.();
-      fetchMetrics(token).then(setMetrics);
-    })();
-  }, [getToken]);
+    const yearlySpend = monthlySpend * 12;
+    const activeCount = activeSubscriptions.length;
+    const trialCount = subscriptions.filter((s) => s.isTrial).length;
 
-  const animatedMonthly = useCountUp(metrics?.monthlySpend ?? 0);
-  const animatedYearly = useCountUp(metrics?.yearlySpend ?? 0);
-  const animatedActive = useCountUp(metrics?.activeCount ?? 0);
-  const animatedTrial = useCountUp(metrics?.trialCount ?? 0);
+    return { monthlySpend, yearlySpend, activeCount, trialCount };
+  }, [subscriptions, displayCurrency]);
+
+  const animatedMonthly = useCountUp(Math.round(metrics.monthlySpend));
+  const animatedYearly = useCountUp(Math.round(metrics.yearlySpend));
+  const animatedActive = useCountUp(metrics.activeCount);
+  const animatedTrial = useCountUp(metrics.trialCount);
 
   const widgetData = [
     {
       label: 'Monthly Spend',
-      value: metrics ? `₹${animatedMonthly.toLocaleString()}` : null,
+      value: formatCurrency(animatedMonthly, displayCurrency),
       icon: <TrendingUp className="w-6 h-6 text-blue-400" />,
       highlight: true,
       bg: 'bg-gradient-to-br from-[#101c2c] to-[#0a0f1a]',
@@ -100,7 +82,7 @@ const SummaryWidgets = () => {
     },
     {
       label: 'Yearly Spend',
-      value: metrics ? `₹${animatedYearly.toLocaleString()}` : null,
+      value: formatCurrency(animatedYearly, displayCurrency),
       icon: <Calendar className="w-6 h-6 text-purple-400" />,
       highlight: false,
       bg: 'bg-gradient-to-br from-[#1a102c] to-[#120a1a]',
@@ -108,7 +90,7 @@ const SummaryWidgets = () => {
     },
     {
       label: 'Active Subscriptions',
-      value: metrics ? animatedActive : null,
+      value: animatedActive,
       icon: <CreditCard className="w-6 h-6 text-green-400" />,
       highlight: false,
       bg: 'bg-gradient-to-br from-[#102c1a] to-[#0a1a12]',
@@ -116,7 +98,7 @@ const SummaryWidgets = () => {
     },
     {
       label: 'Trials Count',
-      value: metrics ? animatedTrial : null,
+      value: animatedTrial,
       icon: <Zap className="w-6 h-6 text-yellow-400" />,
       highlight: false,
       bg: 'bg-gradient-to-br from-[#2c2410] to-[#1a150a]',
