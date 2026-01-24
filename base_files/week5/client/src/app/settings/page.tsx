@@ -30,6 +30,7 @@ export default function SettingsPage() {
   } | null>(null);
   const [status, setStatus] = useState<GmailStatus | null>(null);
   const [emails, setEmails] = useState<EmailPreview[]>([]);
+  const [verifiedEmails, setVerifiedEmails] = useState<string[]>([]);
   const [parsedCount, setParsedCount] = useState<number | null>(null);
   const [saveResult, setSaveResult] = useState<{
     saved: number;
@@ -194,6 +195,7 @@ export default function SettingsPage() {
       }
 
       setEmails(Array.isArray(data.emails) ? data.emails : []);
+      setVerifiedEmails([]);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Failed to fetch emails';
@@ -235,6 +237,20 @@ export default function SettingsPage() {
     } finally {
       setBusy(null);
     }
+  };
+
+  const toggleVerified = (id: string) => {
+    setVerifiedEmails((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const markAllVerified = () => {
+    setVerifiedEmails(emails.map((email) => email.messageId));
+  };
+
+  const clearVerified = () => {
+    setVerifiedEmails([]);
   };
 
   const saveSubscriptions = async () => {
@@ -386,6 +402,80 @@ export default function SettingsPage() {
             )}
           </div>
         </div>
+
+        {emails.length > 0 && (
+          <div className="rounded-2xl border border-white/10 bg-[#0b0f14] p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-white">Verify fetched emails</h2>
+                <p className="text-sm text-gray-400 mt-1">
+                  Review the messages fetched from Gmail before parsing.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={markAllVerified}
+                  className="px-3 py-1.5 rounded-lg border border-white/20 text-white text-xs disabled:opacity-50"
+                  disabled={!emails.length}
+                >
+                  Select all
+                </button>
+                <button
+                  onClick={clearVerified}
+                  className="px-3 py-1.5 rounded-lg border border-white/20 text-white text-xs disabled:opacity-50"
+                  disabled={!verifiedEmails.length}
+                >
+                  Clear
+                </button>
+                <span className="text-xs text-gray-400">
+                  Verified: {verifiedEmails.length}/{emails.length}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-3">
+              {emails.map((email) => {
+                const isVerified = verifiedEmails.includes(email.messageId);
+                return (
+                  <label
+                    key={email.messageId}
+                    className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm transition-colors ${
+                      isVerified
+                        ? 'border-emerald-500/40 bg-emerald-500/10'
+                        : 'border-white/10 bg-[#0f1319] hover:border-white/20'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isVerified}
+                      onChange={() => toggleVerified(email.messageId)}
+                      className="mt-1 accent-emerald-400"
+                    />
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-semibold text-white truncate">
+                          {email.subject || 'Untitled'}
+                        </span>
+                        {isVerified && (
+                          <span className="text-xs text-emerald-300">Verified</span>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        {email.sender || 'Unknown sender'} ·{' '}
+                        {email.timestamp ? new Date(email.timestamp).toLocaleString() : 'Unknown date'}
+                      </div>
+                      {email.snippet && (
+                        <p className="text-xs text-gray-500 mt-2 line-clamp-2">
+                          {email.snippet}
+                        </p>
+                      )}
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
