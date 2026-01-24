@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Subscriptions - Filters & Sorting</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      padding: 30px;
+    }
+    h1 { text-align: center; margin-bottom: 20px; }
+    .filters {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    select {
+      padding: 8px 12px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    .subscription-list {
+      max-width: 600px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card {
+      background: #fff;
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card span { font-weight: bold; }
+    .no-results { text-align: center; font-size: 16px; color: #888; margin-top: 20px; }
+    @media (max-width: 600px) {
+      .card { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>My Subscriptions</h1>
+
+<div class="filters">
+  <select id="filterCategory">
+    <option value="">All Categories</option>
+    <option value="Video">Video</option>
+    <option value="Music">Music</option>
+    <option value="Gaming">Gaming</option>
+  </select>
+
+  <select id="filterStatus">
+    <option value="">All Status</option>
+    <option value="Active">Active</option>
+    <option value="Cancelled">Cancelled</option>
+    <option value="Trial">Trial</option>
+  </select>
+
+  <select id="sortBy">
+    <option value="">Sort By</option>
+    <option value="renewalDate">Renewal Date</option>
+    <option value="amount">Amount</option>
+  </select>
+</div>
+
+<div class="subscription-list" id="subscriptionList"></div>
+
+<script>
+const subscriptions = [
+  { name: "Netflix", category: "Video", status: "Active", renewal: "2026-02-01", amount: 500 },
+  { name: "Spotify", category: "Music", status: "Trial", renewal: "2026-01-28", amount: 300 },
+  { name: "YouTube Premium", category: "Video", status: "Cancelled", renewal: "2025-12-15", amount: 200 },
+  { name: "Xbox Game Pass", category: "Gaming", status: "Active", renewal: "2026-02-10", amount: 400 }
+];
+
+function renderList(list) {
+  const container = document.getElementById("subscriptionList");
+  container.innerHTML = "";
+  if(list.length === 0){
+    container.innerHTML = "<div class='no-results'>No subscriptions found.</div>";
+    return;
+  }
+  list.forEach(sub => {
+    container.innerHTML += `
+      <div class="card">
+        <div>
+          <div><span>${sub.name}</span></div>
+          <div>${sub.category} | ${sub.status}</div>
+        </div>
+        <div>
+          ₹${sub.amount} <br> ${sub.renewal}
+        </div>
+      </div>`;
+  });
+}
+
+function applyFilters() {
+  let filtered = [...subscriptions];
+  const cat = document.getElementById("filterCategory").value;
+  const stat = document.getElementById("filterStatus").value;
+  const sort = document.getElementById("sortBy").value;
+
+  if(cat) filtered = filtered.filter(sub => sub.category === cat);
+  if(stat) filtered = filtered.filter(sub => sub.status === stat);
+
+  if(sort === "renewalDate") filtered.sort((a,b) => new Date(a.renewal) - new Date(b.renewal));
+  if(sort === "amount") filtered.sort((a,b) => a.amount - b.amount);
+
+  renderList(filtered);
+}
+
+document.getElementById("filterCategory").addEventListener("change", applyFilters);
+document.getElementById("filterStatus").addEventListener("change", applyFilters);
+document.getElementById("sortBy").addEventListener("change", applyFilters);
+
+
+renderList(subscriptions);
+</script>
+
+</body>
+</html>
