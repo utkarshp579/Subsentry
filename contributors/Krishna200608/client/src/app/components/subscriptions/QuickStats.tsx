@@ -12,7 +12,7 @@ interface QuickStatsProps {
 
 export default function QuickStats({ subscriptions }: QuickStatsProps) {
   const activeSubscriptions = subscriptions.filter(s => s.status === 'active');
-  
+
   const monthlyTotal = activeSubscriptions.reduce((sum, sub) => {
     if (sub.billingCycle === 'monthly') return sum + sub.amount;
     if (sub.billingCycle === 'yearly') return sum + (sub.amount / 12);
@@ -22,11 +22,11 @@ export default function QuickStats({ subscriptions }: QuickStatsProps) {
 
   const yearlyTotal = monthlyTotal * 12;
 
-  const urgentRenewals = subscriptions.filter(s => 
+  const urgentRenewals = subscriptions.filter(s =>
     s.status === 'active' && isUrgentRenewal(s.renewalDate)
   ).length;
 
-  const trialsEnding = subscriptions.filter(s => 
+  const trialsEnding = subscriptions.filter(s =>
     s.isTrial && s.trialEndsAt && getDaysUntilRenewal(s.trialEndsAt) <= 7
   ).length;
 
@@ -80,7 +80,7 @@ export default function QuickStats({ subscriptions }: QuickStatsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (
@@ -95,10 +95,10 @@ export default function QuickStats({ subscriptions }: QuickStatsProps) {
               transition={{ delay: index * 0.1 }}
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
                   {stat.label}
                 </span>
-                <motion.div 
+                <motion.div
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   className={`w-8 h-8 rounded-lg ${stat.iconBg} flex items-center justify-center`}
                 >
@@ -114,7 +114,7 @@ export default function QuickStats({ subscriptions }: QuickStatsProps) {
                   <AnimatedCounter value={stat.value} duration={0.8} />
                 )}
               </div>
-              <div className={`text-xs ${stat.highlight ? stat.iconColor : 'text-gray-500'}`}>
+              <div className={`text-xs ${stat.highlight ? stat.iconColor : 'text-gray-400'}`}>
                 {stat.change}
               </div>
             </motion.div>

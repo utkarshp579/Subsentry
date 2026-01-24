@@ -1,7 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/utils';
-import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUp, ArrowDown } from 'lucide-react';
 
 export type SortField = 'renewalDate' | 'amount' | 'name' | 'createdAt';
 export type SortOrder = 'asc' | 'desc';
@@ -29,7 +28,7 @@ export default function SortDropdown({
   return (
     <div className="flex items-center gap-2">
       <span className="text-sm text-gray-400 hidden sm:inline">Sort by</span>
-      
+
       <div className="relative">
         <select
           value={sortField}
@@ -43,7 +42,7 @@ export default function SortDropdown({
           ))}
         </select>
         <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
-          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </div>

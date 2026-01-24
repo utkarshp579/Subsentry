@@ -95,7 +95,14 @@ export default function SubscriptionsPage() {
 
     // Apply filters
     if (statusFilter !== 'all') {
-      result = result.filter((s) => s.status === statusFilter);
+      if (statusFilter === 'trial') {
+        result = result.filter((s) => s.isTrial);
+      } else if (statusFilter === 'active') {
+        // Show only non-trial active subscriptions when filtering by "Active"
+        result = result.filter((s) => s.status === 'active' && !s.isTrial);
+      } else {
+        result = result.filter((s) => s.status === statusFilter);
+      }
     }
     if (billingCycleFilter !== 'all') {
       result = result.filter((s) => s.billingCycle === billingCycleFilter);

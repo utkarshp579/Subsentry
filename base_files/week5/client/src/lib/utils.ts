@@ -13,6 +13,32 @@ export function formatCurrency(amount: number, currency: string = 'USD'): string
   }).format(amount);
 }
 
+const EXCHANGE_RATES: Record<string, number> = {
+  USD: 1,
+  INR: 83,
+  EUR: 0.92,
+  GBP: 0.78,
+};
+
+export const CURRENCY_OPTIONS = [
+  { value: 'USD', label: 'USD ($)' },
+  { value: 'INR', label: 'INR (Rs)' },
+  { value: 'EUR', label: 'EUR (Euro)' },
+  { value: 'GBP', label: 'GBP (Pound)' },
+];
+
+export function convertCurrency(
+  amount: number,
+  fromCurrency: string = 'USD',
+  toCurrency: string = 'USD'
+): number {
+  if (fromCurrency === toCurrency) return amount;
+  const fromRate = EXCHANGE_RATES[fromCurrency] ?? 1;
+  const toRate = EXCHANGE_RATES[toCurrency] ?? 1;
+  const usdAmount = amount / fromRate;
+  return usdAmount * toRate;
+}
+
 export function formatDate(date: string | Date): string {
   return new Date(date).toLocaleDateString('en-US', {
     month: 'short',

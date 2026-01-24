@@ -219,3 +219,41 @@ body {
 .bg-gradient-radial {
   background-image: radial-gradient(circle, var(--tw-gradient-stops));
 }
+
+.settings-page {
+  min-height: 100vh;
+  background: #0f172a;
+  padding: 24px;
+}
+
+.page-header {
+  max-width: 800px;
+  margin: 0 auto 32px auto;
+}
+
+.page-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.settings-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.settings-layout {
+  min-height: 100vh;
+  background: #0f172a;
+}
+
+@media (max-width: 640px) {
+  .settings-page {
+    padding: 16px;
+  }
+
+  .page-header h1 {
+    font-size: 24px;
+  }
+}

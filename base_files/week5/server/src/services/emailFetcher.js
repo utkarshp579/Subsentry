@@ -43,6 +43,11 @@ const getValidAccessToken = async (userId, forceRefresh = false) => {
         throw new Error('Gmail not connected');
     }
 
+    const invalidateToken = async (reason) => {
+        await GmailToken.deleteOne({ userId });
+        throw new Error(reason || 'Stored Gmail token is invalid. Please reconnect Gmail.');
+    };
+
     // Check if token is expired (with 5 minute buffer)
     const bufferMs = 5 * 60 * 1000; // 5 minutes
     const isExpired = forceRefresh || new Date() > new Date(new Date(gmailToken.expiresAt).getTime() - bufferMs);
@@ -56,8 +61,16 @@ const getValidAccessToken = async (userId, forceRefresh = false) => {
 
     if (isExpired || forceRefresh) {
         console.log('[Gmail] Refreshing token...');
-        // Refresh the token
-        const newTokens = await refreshAccessToken(gmailToken.refreshToken);
+        let newTokens;
+        try {
+            // Refresh the token
+            newTokens = await refreshAccessToken(gmailToken.refreshToken);
+        } catch (error) {
+            if (error?.message?.includes('Invalid encrypted token') || error?.message?.includes('Unsupported state')) {
+                return invalidateToken('Stored Gmail token is invalid. Please reconnect Gmail.');
+            }
+            throw error;
+        }
 
         // Update stored token
         gmailToken.accessToken = encryptToken(newTokens.access_token);
@@ -70,7 +83,15 @@ const getValidAccessToken = async (userId, forceRefresh = false) => {
     }
 
     // Decrypt and return existing token
-    const accessToken = decryptToken(gmailToken.accessToken);
+    let accessToken;
+    try {
+        accessToken = decryptToken(gmailToken.accessToken);
+    } catch (error) {
+        if (error?.message?.includes('Invalid encrypted token') || error?.message?.includes('Unsupported state')) {
+            return invalidateToken('Stored Gmail token is invalid. Please reconnect Gmail.');
+        }
+        throw error;
+    }
     return { accessToken, gmailToken };
 };
 

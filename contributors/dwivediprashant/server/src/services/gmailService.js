@@ -31,6 +31,10 @@ const saveTokens = async (userId, tokens) => {
       );
     }
     tokens.refresh_token = decrypt(existing.refreshTokenEncrypted);
+  if (!tokens || !tokens.access_token || !tokens.refresh_token) {
+    throw new Error(
+      "Missing access or refresh token. Ensure consent is granted with offline access.",
+    );
   }
 
   const doc = {
@@ -122,12 +126,19 @@ const refreshAccessTokenIfNeeded = async (userId) => {
 
   const updated = oAuth2Client.credentials;
   if (!updated.expiry_date) {
+  await oAuth2Client.getAccessToken();
+
+  const updated = oAuth2Client.credentials;
+  if (!updated.access_token || !updated.expiry_date) {
     throw new Error("Failed to refresh access token.");
   }
 
   await saveTokens(userId, {
     access_token: token,
     refresh_token: updated.refresh_token,
+    access_token: updated.access_token,
+    refresh_token:
+      updated.refresh_token || oAuth2Client.credentials.refresh_token,
     scope: updated.scope,
     token_type: updated.token_type,
     expiry_date: updated.expiry_date,

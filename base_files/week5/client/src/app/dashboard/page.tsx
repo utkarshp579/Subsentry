@@ -4,6 +4,8 @@ import { Subscription } from '@/lib/api';
 import { getServiceColors, getServiceIcon } from '@/lib/service-icons';
 import {
   cn,
+  convertCurrency,
+  CURRENCY_OPTIONS,
   formatCurrency,
   formatDate,
   getCategoryColor,
@@ -126,6 +128,7 @@ export default function Dashboard() {
   const { getToken } = useAuth();
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [displayCurrency, setDisplayCurrency] = useState('USD');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -161,12 +164,6 @@ export default function Dashboard() {
   const activeSubscriptions = subscriptions.filter(
     (s) => s.status === 'active'
   );
-  const monthlyTotal = activeSubscriptions.reduce((sum, sub) => {
-    if (sub.billingCycle === 'monthly') return sum + sub.amount;
-    if (sub.billingCycle === 'yearly') return sum + sub.amount / 12;
-    if (sub.billingCycle === 'weekly') return sum + sub.amount * 4.33;
-    return sum + sub.amount;
-  }, 0);
   const urgentRenewals = subscriptions.filter(
     (s) => s.status === 'active' && isUrgentRenewal(s.renewalDate)
   );
@@ -235,10 +232,26 @@ export default function Dashboard() {
       </div>
 
       {/* Dashboard Summary Widgets */}
-      <SummaryWidgets />
+      <div className="flex items-center justify-end mb-3">
+        <select
+          value={displayCurrency}
+          onChange={(e) => setDisplayCurrency(e.target.value)}
+          className="appearance-none px-3 py-2 text-sm rounded-lg border border-[#2a2a2a] bg-[#0f0f0f] text-gray-300 outline-none cursor-pointer hover:border-[#3a3a3a] transition-colors"
+        >
+          {CURRENCY_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <SummaryWidgets subscriptions={subscriptions} displayCurrency={displayCurrency} />
 
       {/* Upcoming Renewals Section */}
-      <UpcomingRenewals subscriptions={subscriptions} />
+      <UpcomingRenewals
+        subscriptions={subscriptions}
+        displayCurrency={displayCurrency}
+      />
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -321,7 +334,14 @@ export default function Dashboard() {
                     </div>
                     <div className="text-right hidden sm:block">
                       <div className="font-semibold text-white">
-                        {formatCurrency(sub.amount)}
+                        {formatCurrency(
+                          convertCurrency(
+                            sub.amount,
+                            sub.currency || 'USD',
+                            displayCurrency
+                          ),
+                          displayCurrency
+                        )}
                       </div>
                       <div className="text-xs text-gray-500">
                         /{sub.billingCycle === 'yearly' ? 'year' : 'mo'}
@@ -408,7 +428,17 @@ export default function Dashboard() {
                       (s) =>
                         s.category === 'productivity' && s.status === 'active'
                     )
-                    .reduce((sum, s) => sum + s.amount, 0)
+                    .reduce(
+                      (sum, s) =>
+                        sum +
+                        convertCurrency(
+                          s.amount,
+                          s.currency || 'USD',
+                          displayCurrency
+                        ),
+                      0
+                    ),
+                  displayCurrency
                 )}
               </span>{' '}
               of your monthly spend.

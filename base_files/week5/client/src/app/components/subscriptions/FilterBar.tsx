@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 
-export type FilterStatus = 'all' | 'active' | 'paused' | 'cancelled';
+export type FilterStatus = 'all' | 'active' | 'paused' | 'cancelled' | 'trial';
 export type FilterBillingCycle = 'all' | 'monthly' | 'yearly' | 'weekly' | 'custom';
 export type FilterCategory = 'all' | 'entertainment' | 'music' | 'education' | 'productivity' | 'finance' | 'health' | 'other';
 
@@ -33,6 +33,7 @@ interface FilterBarProps {
 const statusOptions: { value: FilterStatus; label: string }[] = [
   { value: 'all', label: 'All Status' },
   { value: 'active', label: 'Active' },
+  { value: 'trial', label: 'Trial' },
   { value: 'paused', label: 'Paused' },
   { value: 'cancelled', label: 'Cancelled' },
 ];

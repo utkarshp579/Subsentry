@@ -5,7 +5,7 @@ import AddSubscriptionForm from '@/app/components/subscriptions/AddSubscriptionF
 
 export default function NewSubscriptionPage() {
   return (
-    <DashboardLayout>
+    <DashboardLayout title="Add Subscription" subtitle="Create a new recurring charge">
       <div className="py-8 px-4">
         <AddSubscriptionForm />
       </div>

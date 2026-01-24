@@ -119,6 +119,9 @@ const mockSubscriptions: Subscription[] = [
   },
 ];
 
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 export default function Dashboard() {
   const { getToken } = useAuth();
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
@@ -129,14 +132,18 @@ export default function Dashboard() {
       try {
         const token = await getToken?.();
 
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/subscriptions`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+        }
+
+        const res = await fetch(`${API_BASE_URL}/api/subscriptions`, {
+          headers,
+        });
+
+        if (!res.ok) {
+          throw new Error(`API error: ${res.status}`);
+        }
 
         const data = await res.json();
         setSubscriptions(Array.isArray(data.data) ? data.data : []);
