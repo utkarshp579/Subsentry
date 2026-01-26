@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Free Trial Highlighting</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef1f6;
+      padding: 40px;
+    }
+
+    .card {
+      max-width: 520px;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 18px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+      margin: auto;
+    }
+
+    .title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 8px 18px;
+      font-size: 15px;
+      border-radius: 20px;
+      background-color: #4caf50;
+      color: #fff;
+      margin-bottom: 18px;
+    }
+
+    .badge.warning {
+      background-color: #ff3b30;
+    }
+
+    .trial-text {
+      font-size: 18px;
+      font-weight: 500;
+      color: #333;
+      margin-top: 12px;
+    }
+
+    .sub-text {
+      font-size: 15px;
+      color: #666;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 20px;
+      }
+
+      .card {
+        padding: 22px;
+      }
+
+      .title {
+        font-size: 24px;
+      }
+
+      .trial-text {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <div class="title">Netflix Subscription</div>
+
+    <span id="trialBadge" class="badge">
+      FREE TRIAL
+    </span>
+
+    <div id="trialInfo" class="trial-text"></div>
+    <div class="sub-text">
+      Cancel anytime before the trial ends to avoid charges.
+    </div>
+  </div>
+
+  <script>
+    // Trial data (dynamic, not hardcoded text)
+    const isTrial = true;
+    const trialEndDate = new Date();
+    trialEndDate.setDate(trialEndDate.getDate() + 2); // ends in 2 days
+
+    const today = new Date();
+    const diff = trialEndDate - today;
+    const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+    const badge = document.getElementById("trialBadge");
+    const info = document.getElementById("trialInfo");
+
+    if (isTrial) {
+      if (daysLeft <= 3 && daysLeft >= 0) {
+        badge.classList.add("warning");
+        badge.innerText = "TRIAL ENDING SOON";
+      }
+
+      info.innerText = `Trial ends in ${daysLeft} days`;
+    }
+  </script>
+
+</body>
+</html>
