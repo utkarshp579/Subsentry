@@ -61,8 +61,8 @@ Frontend (Week 5)
 |  **18** | Parse Emails                      | Krishna200608 (**#251**)  |
 |  **19** | Save Email-based Subscriptions    | ishanrajsingh (**#242**)  |
 |  **20** | Email Ingestion UI Feedback       | ishanrajsingh (**#243**)  |
-|  **21** | Free Trial Highlighting           | Krishna200608 (**#267**)  |
-|  **22** | Filters & Sorting UI              | Krishna200608 (**#268**)  |
+|  **21** | Free Trial Highlighting           | Krishna200608 (**#267**), dwivediprashant (**#274**)  |
+|  **22** | Filters & Sorting UI              | Krishna200608 (**#268**), dwivediprashant (**#275**)  |
 |  **23** | Final UI Polish                   | Krishna200608 (**#269**)  |
 |  **Maintainer** | Settings UX + Gmail controls hardening | Aryan-coder06 (manual integration) |
 

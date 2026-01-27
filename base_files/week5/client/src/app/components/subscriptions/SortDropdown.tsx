@@ -3,7 +3,7 @@
 import { cn } from '@/lib/utils';
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
-export type SortField = 'renewalDate' | 'amount' | 'name' | 'createdAt';
+export type SortField = 'renewalDate' | 'amount' | 'name' | 'createdAt' | 'category';
 export type SortOrder = 'asc' | 'desc';
 
 interface SortDropdownProps {
@@ -18,6 +18,7 @@ const sortOptions: { value: SortField; label: string }[] = [
   { value: 'amount', label: 'Amount' },
   { value: 'name', label: 'Name' },
   { value: 'createdAt', label: 'Date Added' },
+  { value: 'category', label: 'Category' },
 ];
 
 export default function SortDropdown({

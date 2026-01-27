@@ -130,6 +130,9 @@ export default function SubscriptionsPage() {
           comparison =
             new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
           break;
+        case 'category':
+          comparison = a.category.localeCompare(b.category);
+          break;
       }
       return sortOrder === 'asc' ? comparison : -comparison;
     });
