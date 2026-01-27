@@ -2,6 +2,7 @@ import cors from 'cors';
 import express from 'express';
 import subscriptionRoutes from './routes/subscription.routes.js';
 import gmailRoutes from './routes/gmail.routes.js';
+import analyticsRoutes from './routes/analytics.routes.js';
 import attachUser from './middleware/attachUser.js';
 
 const app = express();
@@ -16,5 +17,6 @@ app.get('/', (_, res) => {
 
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/gmail', gmailRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 export default app;
