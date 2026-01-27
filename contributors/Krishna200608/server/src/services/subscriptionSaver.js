@@ -154,6 +154,8 @@ export const saveCandidates = async (parsedEmails, userId) => {
                 messageId: email.messageId,
                 vendorName: email.vendorName,
                 rawVendor: email.rawVendor,
+                vendorIcon: email.vendorIcon,
+                confidenceScore: email.confidenceScore,
                 confidenceScore: email.confidenceScore,
                 extractedData: email.extractedData,
                 status: 'PENDING',

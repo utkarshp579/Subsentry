@@ -122,6 +122,7 @@ export const parseEmail = (email) => {
             // Core Identity
             vendorName: serviceName,
             rawVendor: sender,
+            vendorIcon: vendorResolveResult?.icon || 'default',
 
             // Confidence
             confidenceScore: confidenceResult.score,

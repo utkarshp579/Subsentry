@@ -71,7 +71,7 @@ const runDemo = async () => {
         console.log(`[DB] Found ${candidates.length} documents in 'subscriptioncandidates' collection:`);
 
         candidates.forEach(c => {
-            console.log(`   - [${c.status}] ${c.vendorName} ($${c.extractedData?.amount})`);
+            console.log(`   - [${c.status}] ${c.vendorName} (Icon: ${c.vendorIcon}) ($${c.extractedData?.amount})`);
         });
 
         console.log('\n[SUCCESS] DEMO COMPLETE');

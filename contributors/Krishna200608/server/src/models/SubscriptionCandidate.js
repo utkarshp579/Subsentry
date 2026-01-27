@@ -20,6 +20,10 @@ const subscriptionCandidateSchema = new Schema(
         rawVendor: {
             type: String, // What we actually found (e.g., "Netflix, Inc.")
         },
+        vendorIcon: {
+            type: String, // Icon key (e.g., "netflix")
+            default: 'default',
+        },
         confidenceScore: {
             type: Number,
             required: true,

@@ -4,39 +4,39 @@ import stringSimilarity from 'string-similarity';
  * Service to resolve vendor names using regex patterns and fuzzy matching
  */
 
-// Known services registry with patterns
+// Known services registry with patterns and icon keys
 const SERVICE_REGISTRY = [
-    { name: 'Netflix', patterns: [/netflix/i] },
-    { name: 'Spotify', patterns: [/spotify/i] },
-    { name: 'Amazon Prime', patterns: [/amazon\s*prime/i, /prime\s*membership/i] },
-    { name: 'Disney+', patterns: [/disney\s*\+|disneyplus/i] },
-    { name: 'HBO Max', patterns: [/hbo\s*max|hbomax/i] },
-    { name: 'YouTube Premium', patterns: [/youtube\s*(premium|music)/i] },
-    { name: 'Apple', patterns: [/apple/i, /itunes/i] },
-    { name: 'Google', patterns: [/google\s*(one|workspace|drive|storage)/i] },
-    { name: 'Microsoft 365', patterns: [/microsoft\s*365|office\s*365/i] },
-    { name: 'Adobe', patterns: [/adobe/i, /creative\s*cloud/i] },
-    { name: 'Dropbox', patterns: [/dropbox/i] },
-    { name: 'Slack', patterns: [/slack/i] },
-    { name: 'Zoom', patterns: [/zoom/i] },
-    { name: 'Canva', patterns: [/canva/i] },
-    { name: 'Notion', patterns: [/notion/i] },
-    { name: 'GitHub', patterns: [/github/i] },
-    { name: 'LinkedIn', patterns: [/linkedin/i] },
-    { name: 'Grammarly', patterns: [/grammarly/i] },
-    { name: 'ChatGPT', patterns: [/chatgpt|openai/i] },
-    { name: 'Claude', patterns: [/claude|anthropic/i] },
-    { name: 'Midjourney', patterns: [/midjourney/i] },
-    { name: 'Vercel', patterns: [/vercel/i] },
-    { name: 'Heroku', patterns: [/heroku/i] },
-    { name: 'DigitalOcean', patterns: [/digital\s*ocean/i] },
-    { name: 'AWS', patterns: [/amazon\s*web\s*services|aws/i] },
-    { name: 'PlayStation', patterns: [/playstation|ps\s*plus/i] },
-    { name: 'Xbox', patterns: [/xbox/i] },
-    { name: 'Nintendo', patterns: [/nintendo/i] },
-    { name: 'Hulu', patterns: [/hulu/i] },
-    { name: 'Peacock', patterns: [/peacock/i] },
-    { name: 'Paramount+', patterns: [/paramount\s*\+/i] },
+    { name: 'Netflix', icon: 'netflix', patterns: [/netflix/i] },
+    { name: 'Spotify', icon: 'spotify', patterns: [/spotify/i] },
+    { name: 'Amazon Prime', icon: 'amazon_prime', patterns: [/amazon\s*prime/i, /prime\s*membership/i] },
+    { name: 'Disney+', icon: 'disney_plus', patterns: [/disney\s*\+|disneyplus/i] },
+    { name: 'HBO Max', icon: 'hbo_max', patterns: [/hbo\s*max|hbomax/i] },
+    { name: 'YouTube Premium', icon: 'youtube', patterns: [/youtube\s*(premium|music)/i] },
+    { name: 'Apple', icon: 'apple', patterns: [/apple/i, /itunes/i] },
+    { name: 'Google', icon: 'google', patterns: [/google\s*(one|workspace|drive|storage)/i] },
+    { name: 'Microsoft 365', icon: 'microsoft', patterns: [/microsoft\s*365|office\s*365/i] },
+    { name: 'Adobe', icon: 'adobe', patterns: [/adobe/i, /creative\s*cloud/i] },
+    { name: 'Dropbox', icon: 'dropbox', patterns: [/dropbox/i] },
+    { name: 'Slack', icon: 'slack', patterns: [/slack/i] },
+    { name: 'Zoom', icon: 'zoom', patterns: [/zoom/i] },
+    { name: 'Canva', icon: 'canva', patterns: [/canva/i] },
+    { name: 'Notion', icon: 'notion', patterns: [/notion/i] },
+    { name: 'GitHub', icon: 'github', patterns: [/github/i] },
+    { name: 'LinkedIn', icon: 'linkedin', patterns: [/linkedin/i] },
+    { name: 'Grammarly', icon: 'grammarly', patterns: [/grammarly/i] },
+    { name: 'ChatGPT', icon: 'chatgpt', patterns: [/chatgpt|openai/i] },
+    { name: 'Claude', icon: 'claude', patterns: [/claude|anthropic/i] },
+    { name: 'Midjourney', icon: 'midjourney', patterns: [/midjourney/i] },
+    { name: 'Vercel', icon: 'vercel', patterns: [/vercel/i] },
+    { name: 'Heroku', icon: 'heroku', patterns: [/heroku/i] },
+    { name: 'DigitalOcean', icon: 'digital_ocean', patterns: [/digital\s*ocean/i] },
+    { name: 'AWS', icon: 'aws', patterns: [/amazon\s*web\s*services|aws/i] },
+    { name: 'PlayStation', icon: 'playstation', patterns: [/playstation|ps\s*plus/i] },
+    { name: 'Xbox', icon: 'xbox', patterns: [/xbox/i] },
+    { name: 'Nintendo', icon: 'nintendo', patterns: [/nintendo/i] },
+    { name: 'Hulu', icon: 'hulu', patterns: [/hulu/i] },
+    { name: 'Peacock', icon: 'peacock', patterns: [/peacock/i] },
+    { name: 'Paramount+', icon: 'paramount_plus', patterns: [/paramount\s*\+/i] },
 ];
 
 // Extract just the names for fuzzy matching
@@ -47,7 +47,7 @@ const KNOWN_SERVICE_NAMES = SERVICE_REGISTRY.map(s => s.name);
  * @param {string} senderName - Sender name (e.g., "Netflix, Inc.")
  * @param {string} senderEmail - Sender email (e.g., "info@mailer.netflix.com")
  * @param {string} subject - Email subject
- * @returns {Object} - { name, method, confidence }
+ * @returns {Object} - { name, icon, method, confidence }
  */
 export const resolveVendor = (senderName = '', senderEmail = '', subject = '') => {
     // 1. Precise Regex Matching
@@ -58,6 +58,7 @@ export const resolveVendor = (senderName = '', senderEmail = '', subject = '') =
             if (pattern.test(combinedText)) {
                 return {
                     name: service.name,
+                    icon: service.icon,
                     method: 'REGEX_MATCH',
                     confidence: 1.0
                 };
@@ -92,8 +93,11 @@ export const resolveVendor = (senderName = '', senderEmail = '', subject = '') =
     const bestMatch = matches.bestMatch;
 
     if (bestMatch.rating > 0.4) {
+        // Find the icon for the best match
+        const matchedService = SERVICE_REGISTRY.find(s => s.name === bestMatch.target);
         return {
             name: bestMatch.target,
+            icon: matchedService ? matchedService.icon : 'default',
             method: 'FUZZY_MATCH',
             confidence: bestMatch.rating
         };
@@ -105,6 +109,7 @@ export const resolveVendor = (senderName = '', senderEmail = '', subject = '') =
 
     return {
         name: formattedName,
+        icon: 'default',
         method: 'EXTRACTION',
         confidence: 0.3 // Low confidence as it's just an extraction
     };
