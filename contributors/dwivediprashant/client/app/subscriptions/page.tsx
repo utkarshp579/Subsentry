@@ -30,18 +30,20 @@ export interface SubscriptionData {
 export interface FilterConfiguration {
   statusFilter: string;
   cycleFilter: string;
+  categoryFilter: string;
   sortBy: "renewalDate" | "cost" | "serviceCategory";
   sortOrder: "asc" | "desc";
 }
 
 export default function Subscriptions() {
   const [subscriptionList, setSubscriptionList] = useState<SubscriptionData[]>(
-    []
+    [],
   );
   const [loadingState, setLoadingState] = useState(true);
   const [filterConfig, setFilterConfig] = useState<FilterConfiguration>({
     statusFilter: "all",
     cycleFilter: "all",
+    categoryFilter: "all",
     sortBy: "renewalDate",
     sortOrder: "asc",
   });
@@ -109,7 +111,7 @@ export default function Subscriptions() {
         `/api/subscriptions/${deletingSubscription._id}`,
         {
           method: "DELETE",
-        }
+        },
       );
 
       if (!response.ok) {
@@ -144,16 +146,24 @@ export default function Subscriptions() {
       const cycleMatch =
         filterConfig.cycleFilter === "all" ||
         subscription.billingInterval === filterConfig.cycleFilter;
-      return statusMatch && cycleMatch;
+      const categoryMatch =
+        filterConfig.categoryFilter === "all" ||
+        subscription.serviceCategory === filterConfig.categoryFilter;
+      return statusMatch && cycleMatch && categoryMatch;
     });
 
     return filtered.sort((a, b) => {
       const { sortBy, sortOrder } = filterConfig;
-
       if (sortBy === "renewalDate") {
         const dateA = new Date(a.upcomingRenewal).getTime();
         const dateB = new Date(b.upcomingRenewal).getTime();
         return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+      } else if (sortBy === "serviceCategory") {
+        const catA = a.serviceCategory.toLowerCase();
+        const catB = b.serviceCategory.toLowerCase();
+        if (catA < catB) return sortOrder === "asc" ? -1 : 1;
+        if (catA > catB) return sortOrder === "asc" ? 1 : -1;
+        return 0;
       } else {
         return sortOrder === "asc" ? a.cost - b.cost : b.cost - a.cost;
       }

@@ -21,8 +21,14 @@ export default function FilterControls({
     onFilterChange({ ...filterConfig, cycleFilter: value });
   };
 
-  const handleSortChange = (value: "renewalDate" | "cost") => {
+  const handleSortChange = (
+    value: "renewalDate" | "cost" | "serviceCategory",
+  ) => {
     onFilterChange({ ...filterConfig, sortBy: value });
+  };
+
+  const handleCategoryChange = (value: string) => {
+    onFilterChange({ ...filterConfig, categoryFilter: value });
   };
 
   const toggleSortOrder = () => {
@@ -36,13 +42,16 @@ export default function FilterControls({
     onFilterChange({
       statusFilter: "all",
       cycleFilter: "all",
+      categoryFilter: "all",
       sortBy: "renewalDate",
       sortOrder: "asc",
     });
   };
 
   const hasActiveFilters =
-    filterConfig.statusFilter !== "all" || filterConfig.cycleFilter !== "all";
+    filterConfig.statusFilter !== "all" ||
+    filterConfig.cycleFilter !== "all" ||
+    filterConfig.categoryFilter !== "all";
 
   return (
     <div className="bg-[#000000] rounded-xl border border-[#333333]/50 p-6 mb-6 shadow-2xl">
@@ -71,6 +80,38 @@ export default function FilterControls({
 
         {/* Filter Controls */}
         <div className="flex flex-col sm:flex-row gap-4">
+          {/* Category Filter */}
+          <div className="relative">
+            <select
+              value={filterConfig.categoryFilter}
+              onChange={(e) => handleCategoryChange(e.target.value)}
+              className="appearance-none bg-[#282828]/80 backdrop-blur-sm border border-[#2A2A2A]/50 rounded-lg px-4 py-2 pr-8 text-sm text-[#FFFFFF] focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/50 focus:border-[#3B82F6] transition-all"
+            >
+              <option value="all">All Categories</option>
+              <option value="entertainment">Entertainment</option>
+              <option value="productivity">Productivity</option>
+              <option value="utilities">Utilities</option>
+              <option value="education">Education</option>
+              <option value="health">Health & Wellness</option>
+              <option value="finance">Finance</option>
+              <option value="other">Other</option>
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+              <svg
+                className="w-4 h-4 text-[#B3B3B3]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
+          </div>
           {/* Status Filter */}
           <div className="relative">
             <select
@@ -136,12 +177,18 @@ export default function FilterControls({
               <select
                 value={filterConfig.sortBy}
                 onChange={(e) =>
-                  handleSortChange(e.target.value as "renewalDate" | "cost")
+                  handleSortChange(
+                    e.target.value as
+                      | "renewalDate"
+                      | "cost"
+                      | "serviceCategory",
+                  )
                 }
                 className="appearance-none bg-[#282828]/80 backdrop-blur-sm border border-[#2A2A2A]/50 rounded-lg px-4 py-2 pr-8 text-sm text-[#FFFFFF] focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/50 focus:border-[#3B82F6] transition-all"
               >
                 <option value="renewalDate">Renewal Date</option>
                 <option value="cost">Amount</option>
+                <option value="serviceCategory">Category</option>
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                 <svg
@@ -213,6 +260,17 @@ export default function FilterControls({
               <span>Cycle: {filterConfig.cycleFilter}</span>
               <button
                 onClick={() => handleCycleChange("all")}
+                className="ml-1 hover:text-[#3B82F6]"
+              >
+                ×
+              </button>
+            </div>
+          )}
+          {filterConfig.categoryFilter !== "all" && (
+            <div className="inline-flex items-center gap-1 px-3 py-1 bg-[#3B82F6]/20 text-[#60A5FA] rounded-full text-sm border border-[#3B82F6]/30 backdrop-blur-sm">
+              <span>Category: {filterConfig.categoryFilter}</span>
+              <button
+                onClick={() => handleCategoryChange("all")}
                 className="ml-1 hover:text-[#3B82F6]"
               >
                 ×
