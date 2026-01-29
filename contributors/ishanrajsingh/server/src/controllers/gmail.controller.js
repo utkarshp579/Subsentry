@@ -10,7 +10,7 @@ import {
 } from '../config/gmail.config.js';
 import { fetchTransactionalEmails } from '../services/emailFetcher.js';
 import { parseEmails as parseEmailsService, parseAndGroupByService } from '../services/emailParser.js';
-import { saveEmailSubscriptions } from '../services/subscriptionSaver.js';
+import { saveEmailSubscriptions, saveCandidates } from '../services/subscriptionSaver.js';
 
 // In-memory state store for CSRF protection (use Redis in production)
 const stateStore = new Map();
@@ -404,8 +404,19 @@ export const saveSubscriptions = async (req, res) => {
             parsedEmails = parseEmailsService(fetchResult.emails);
         }
 
-        // Save subscriptions with deduplication
-        const result = await saveEmailSubscriptions(parsedEmails, req.user.id);
+        // V2: Save as Candidates
+        // We detect if it's V2 by the presence of 'vendorName' (from new parser)
+        // or we just default to V2 for improved flow
+        let result;
+        if (parsedEmails.length > 0 && (parsedEmails[0].vendorName || parsedEmails[0].confidenceScore !== undefined)) {
+            console.log('[Gmail Controller] Using V2 Candidate Saving');
+            result = await saveCandidates(parsedEmails, req.user.id);
+        } else {
+            console.log('[Gmail Controller] Using Legacy Subscription Saving');
+            // Check if we can re-parse legacy format to new format?
+            // For now, fallback
+            result = await saveEmailSubscriptions(parsedEmails, req.user.id);
+        }
 
         res.json({
             success: true,

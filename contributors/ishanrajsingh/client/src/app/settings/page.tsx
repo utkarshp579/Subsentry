@@ -24,9 +24,13 @@ type EmailPreview = {
 
 export default function SettingsPage() {
   const { getToken } = useAuth();
-  const [gmailBanner, setGmailBanner] = useState<string | null>(null);
+  const [gmailNotice, setGmailNotice] = useState<{
+    message: string;
+    tone: 'success' | 'warning' | 'error';
+  } | null>(null);
   const [status, setStatus] = useState<GmailStatus | null>(null);
   const [emails, setEmails] = useState<EmailPreview[]>([]);
+  const [verifiedEmails, setVerifiedEmails] = useState<string[]>([]);
   const [parsedCount, setParsedCount] = useState<number | null>(null);
   const [saveResult, setSaveResult] = useState<{
     saved: number;
@@ -41,15 +45,37 @@ export default function SettingsPage() {
     const params = new URLSearchParams(window.location.search);
     const state = params.get('gmail');
     if (state === 'success') {
-      setGmailBanner('Gmail connected successfully.');
+      setGmailNotice({ message: 'Gmail connected successfully.', tone: 'success' });
     } else if (state === 'denied') {
-      setGmailBanner('Gmail access was denied.');
+      setGmailNotice({ message: 'Gmail access was denied.', tone: 'error' });
     } else if (state === 'error') {
-      setGmailBanner('Gmail connection failed. Try again.');
+      setGmailNotice({ message: 'Gmail connection failed. Try again.', tone: 'error' });
     } else {
-      setGmailBanner(null);
+      setGmailNotice(null);
     }
   }, []);
+
+  const handleInvalidToken = (message: string) => {
+    const normalized = message.toLowerCase();
+    const isInvalid =
+      normalized.includes('token is invalid') ||
+      normalized.includes('invalid encrypted token') ||
+      normalized.includes('unsupported state');
+
+    if (isInvalid) {
+      setGmailNotice({
+        message: 'Gmail token invalid or expired. Please disconnect and reconnect Gmail.',
+        tone: 'warning',
+      });
+      setStatus({ connected: false });
+      setEmails([]);
+      setParsedCount(null);
+      setSaveResult(null);
+      return true;
+    }
+
+    return false;
+  };
 
   const fetchStatus = async () => {
     setError(null);
@@ -77,9 +103,10 @@ export default function SettingsPage() {
         message: data.message,
       });
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to fetch Gmail status'
-      );
+      const message =
+        err instanceof Error ? err.message : 'Failed to fetch Gmail status';
+      setError(message);
+      handleInvalidToken(message);
     } finally {
       setBusy(null);
     }
@@ -109,7 +136,10 @@ export default function SettingsPage() {
 
       window.location.href = data.authUrl;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to connect Gmail');
+      const message =
+        err instanceof Error ? err.message : 'Failed to connect Gmail';
+      setError(message);
+      handleInvalidToken(message);
     } finally {
       setBusy(null);
     }
@@ -138,9 +168,10 @@ export default function SettingsPage() {
       setParsedCount(null);
       setSaveResult(null);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to disconnect Gmail'
-      );
+      const message =
+        err instanceof Error ? err.message : 'Failed to disconnect Gmail';
+      setError(message);
+      handleInvalidToken(message);
     } finally {
       setBusy(null);
     }
@@ -164,8 +195,12 @@ export default function SettingsPage() {
       }
 
       setEmails(Array.isArray(data.emails) ? data.emails : []);
+      setVerifiedEmails([]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch emails');
+      const message =
+        err instanceof Error ? err.message : 'Failed to fetch emails';
+      setError(message);
+      handleInvalidToken(message);
     } finally {
       setBusy(null);
     }
@@ -195,10 +230,27 @@ export default function SettingsPage() {
 
       setParsedCount(Array.isArray(data.parsed) ? data.parsed.length : 0);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to parse emails');
+      const message =
+        err instanceof Error ? err.message : 'Failed to parse emails';
+      setError(message);
+      handleInvalidToken(message);
     } finally {
       setBusy(null);
     }
+  };
+
+  const toggleVerified = (id: string) => {
+    setVerifiedEmails((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const markAllVerified = () => {
+    setVerifiedEmails(emails.map((email) => email.messageId));
+  };
+
+  const clearVerified = () => {
+    setVerifiedEmails([]);
   };
 
   const saveSubscriptions = async () => {
@@ -229,9 +281,10 @@ export default function SettingsPage() {
         errors: data.errors ?? 0,
       });
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to save subscriptions'
-      );
+      const message =
+        err instanceof Error ? err.message : 'Failed to save subscriptions';
+      setError(message);
+      handleInvalidToken(message);
     } finally {
       setBusy(null);
     }
@@ -240,9 +293,17 @@ export default function SettingsPage() {
   return (
     <DashboardLayout title="Settings" subtitle="Gmail ingestion controls">
       <div className="space-y-6">
-        {gmailBanner && (
-          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-            {gmailBanner}
+        {gmailNotice && (
+          <div
+            className={
+              gmailNotice.tone === 'success'
+                ? 'rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200'
+                : gmailNotice.tone === 'warning'
+                  ? 'rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-200'
+                  : 'rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200'
+            }
+          >
+            {gmailNotice.message}
           </div>
         )}
 
@@ -341,6 +402,80 @@ export default function SettingsPage() {
             )}
           </div>
         </div>
+
+        {emails.length > 0 && (
+          <div className="rounded-2xl border border-white/10 bg-[#0b0f14] p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-white">Verify fetched emails</h2>
+                <p className="text-sm text-gray-400 mt-1">
+                  Review the messages fetched from Gmail before parsing.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={markAllVerified}
+                  className="px-3 py-1.5 rounded-lg border border-white/20 text-white text-xs disabled:opacity-50"
+                  disabled={!emails.length}
+                >
+                  Select all
+                </button>
+                <button
+                  onClick={clearVerified}
+                  className="px-3 py-1.5 rounded-lg border border-white/20 text-white text-xs disabled:opacity-50"
+                  disabled={!verifiedEmails.length}
+                >
+                  Clear
+                </button>
+                <span className="text-xs text-gray-400">
+                  Verified: {verifiedEmails.length}/{emails.length}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-3">
+              {emails.map((email) => {
+                const isVerified = verifiedEmails.includes(email.messageId);
+                return (
+                  <label
+                    key={email.messageId}
+                    className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm transition-colors ${
+                      isVerified
+                        ? 'border-emerald-500/40 bg-emerald-500/10'
+                        : 'border-white/10 bg-[#0f1319] hover:border-white/20'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isVerified}
+                      onChange={() => toggleVerified(email.messageId)}
+                      className="mt-1 accent-emerald-400"
+                    />
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-semibold text-white truncate">
+                          {email.subject || 'Untitled'}
+                        </span>
+                        {isVerified && (
+                          <span className="text-xs text-emerald-300">Verified</span>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        {email.sender || 'Unknown sender'} ·{' '}
+                        {email.timestamp ? new Date(email.timestamp).toLocaleString() : 'Unknown date'}
+                      </div>
+                      {email.snippet && (
+                        <p className="text-xs text-gray-500 mt-2 line-clamp-2">
+                          {email.snippet}
+                        </p>
+                      )}
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

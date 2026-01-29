@@ -17,15 +17,7 @@ import { Button } from '@/components/ui/button';
 
 export type FilterStatus = 'all' | 'active' | 'paused' | 'cancelled' | 'trial';
 export type FilterBillingCycle = 'all' | 'monthly' | 'yearly' | 'weekly' | 'custom';
-export type FilterCategory =
-  | 'all'
-  | 'entertainment'
-  | 'music'
-  | 'education'
-  | 'productivity'
-  | 'finance'
-  | 'health'
-  | 'other';
+export type FilterCategory = 'all' | 'entertainment' | 'music' | 'education' | 'productivity' | 'finance' | 'health' | 'other';
 
 interface FilterBarProps {
   statusFilter: FilterStatus;
@@ -65,86 +57,6 @@ const categoryOptions: { value: FilterCategory; label: string }[] = [
   { value: 'other', label: 'Other' },
 ];
 
-const PillFilter = ({
-  options,
-  value,
-  onChange,
-  label,
-}: {
-  options: { value: string; label: string }[];
-  value: string;
-  onChange: (val: string) => void;
-  label: string;
-}) => (
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <motion.button
-        whileHover={{ scale: 1.04 }}
-        whileTap={{ scale: 0.97 }}
-        className={cn(
-          'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-full border transition-all',
-          'backdrop-blur-md shadow-sm',
-          value !== 'all'
-            ? 'bg-gradient-to-r from-blue-500/15 to-purple-500/15 border-blue-500/40 text-blue-300 shadow-[0_0_12px_rgba(59,130,246,0.25)]'
-            : 'bg-[#0b0b0b] border-[#2a2a2a] text-gray-300 hover:border-[#3a3a3a] hover:bg-[#121212]'
-        )}
-      >
-        {options.find(o => o.value === value)?.label || label}
-        <ChevronDown className="w-4 h-4 opacity-70" />
-      </motion.button>
-    </DropdownMenuTrigger>
-
-    <DropdownMenuContent
-      align="start"
-      sideOffset={6}
-      className="w-52 rounded-xl border border-[#1f1f1f] bg-[#0b0b0b] shadow-xl"
-    >
-      <DropdownMenuLabel className="text-xs uppercase tracking-wide text-gray-400">
-        {label}
-      </DropdownMenuLabel>
-      <DropdownMenuSeparator className="bg-[#1f1f1f]" />
-      <DropdownMenuRadioGroup value={value} onValueChange={onChange}>
-        {options.map(option => (
-          <DropdownMenuRadioItem
-            key={option.value}
-            value={option.value}
-            className="cursor-pointer rounded-md focus:bg-[#141414]"
-          >
-            {option.label}
-          </DropdownMenuRadioItem>
-        ))}
-      </DropdownMenuRadioGroup>
-    </DropdownMenuContent>
-  </DropdownMenu>
-);
-
-const StatusPills = ({
-  statusFilter,
-  onStatusChange,
-}: {
-  statusFilter: FilterStatus;
-  onStatusChange: (status: FilterStatus) => void;
-}) => (
-  <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#080808] border border-[#1b1b1b] shadow-inner">
-    {statusOptions.map(option => (
-      <motion.button
-        key={option.value}
-        onClick={() => onStatusChange(option.value)}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.96 }}
-        className={cn(
-          'px-3.5 py-1.5 text-xs font-medium rounded-xl transition-all',
-          statusFilter === option.value
-            ? 'bg-gradient-to-r from-blue-500/30 to-purple-500/30 text-white shadow-md'
-            : 'text-gray-400 hover:text-white hover:bg-[#151515]'
-        )}
-      >
-        {option.label === 'All Status' ? 'All' : option.label}
-      </motion.button>
-    ))}
-  </div>
-);
-
 export default function FilterBar({
   statusFilter,
   billingCycleFilter,
@@ -157,86 +69,139 @@ export default function FilterBar({
 }: FilterBarProps) {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
+  const PillFilter = ({ 
+    options, 
+    value, 
+    onChange, 
+    label 
+  }: { 
+    options: { value: string; label: string }[]; 
+    value: string; 
+    onChange: (val: string) => void;
+    label: string;
+  }) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className={cn(
+            'flex items-center gap-2 px-3 py-2 text-sm rounded-full border transition-all',
+            value !== 'all'
+              ? 'bg-blue-500/10 border-blue-500/50 text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.2)]'
+              : 'bg-[#0f0f0f] border-[#2a2a2a] text-gray-300 hover:border-[#3a3a3a]'
+          )}
+        >
+          {options.find(o => o.value === value)?.label || label}
+          <ChevronDown className="w-3 h-3" />
+        </motion.button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-48">
+        <DropdownMenuLabel>{label}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuRadioGroup value={value} onValueChange={onChange}>
+          {options.map((option) => (
+            <DropdownMenuRadioItem key={option.value} value={option.value}>
+              {option.label}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
+  // Quick Status Pills
+  const StatusPills = () => (
+    <div className="flex items-center gap-1 p-1 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a]">
+      {statusOptions.map((option) => (
+        <motion.button
+          key={option.value}
+          onClick={() => onStatusChange(option.value)}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className={cn(
+            'px-3 py-1.5 text-sm rounded-lg transition-all',
+            statusFilter === option.value
+              ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white shadow-sm'
+              : 'text-gray-400 hover:text-white hover:bg-[#1a1a1a]'
+          )}
+        >
+          {option.label === 'All Status' ? 'All' : option.label}
+        </motion.button>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Desktop Filters */}
-      <div className="hidden md:flex flex-wrap items-center justify-between gap-4 p-3 rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] shadow-lg">
+      <div className="hidden md:flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2 text-gray-400">
           <Filter className="w-4 h-4" />
-          <span className="text-sm font-semibold tracking-wide">Filters</span>
+          <span className="text-sm font-medium">Filters</span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <StatusPills
-            statusFilter={statusFilter}
-            onStatusChange={onStatusChange}
-          />
+        {/* Status Pills - Quick Access */}
+        <StatusPills />
 
-          <PillFilter
-            options={billingCycleOptions}
-            value={billingCycleFilter}
-            onChange={val =>
-              onBillingCycleChange(val as FilterBillingCycle)
-            }
-            label="Billing Cycle"
-          />
+        {/* Billing Cycle Dropdown */}
+        <PillFilter
+          options={billingCycleOptions}
+          value={billingCycleFilter}
+          onChange={(val) => onBillingCycleChange(val as FilterBillingCycle)}
+          label="Billing Cycle"
+        />
 
-          <PillFilter
-            options={categoryOptions}
-            value={categoryFilter}
-            onChange={val =>
-              onCategoryChange(val as FilterCategory)
-            }
-            label="Category"
-          />
+        {/* Category Dropdown */}
+        <PillFilter
+          options={categoryOptions}
+          value={categoryFilter}
+          onChange={(val) => onCategoryChange(val as FilterCategory)}
+          label="Category"
+        />
 
-          <AnimatePresence>
-            {activeFiltersCount > 0 && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.85 }}
+        {/* Clear Filters */}
+        <AnimatePresence>
+          {activeFiltersCount > 0 && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClearFilters}
+                className="gap-1.5 text-gray-400"
               >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onClearFilters}
-                  className="gap-2 text-gray-400 hover:text-white hover:bg-[#161616]"
-                >
-                  <X className="w-4 h-4" />
-                  Clear ({activeFiltersCount})
-                </Button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                <X className="w-4 h-4" />
+                Clear ({activeFiltersCount})
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Mobile Filters */}
       <div className="md:hidden">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
           <Button
             variant="secondary"
             size="sm"
             onClick={() => setShowMobileFilters(!showMobileFilters)}
-            className="gap-2 rounded-xl"
+            className="gap-2"
           >
             <Filter className="w-4 h-4" />
             Filters
             {activeFiltersCount > 0 && (
-              <span className="ml-1 w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center">
+              <span className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center">
                 {activeFiltersCount}
               </span>
             )}
           </Button>
 
           {activeFiltersCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClearFilters}
-              className="rounded-xl"
-            >
+            <Button variant="ghost" size="sm" onClick={onClearFilters}>
               <X className="w-4 h-4" />
             </Button>
           )}
@@ -250,31 +215,23 @@ export default function FilterBar({
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden mt-3"
             >
-              <div className="flex flex-wrap gap-2 p-3 bg-[#0b0b0b] rounded-2xl border border-[#1a1a1a] shadow-lg">
+              <div className="flex flex-wrap gap-2 p-3 bg-[#0f0f0f] rounded-xl border border-[#1a1a1a]">
                 <PillFilter
                   options={statusOptions}
                   value={statusFilter}
-                  onChange={val =>
-                    onStatusChange(val as FilterStatus)
-                  }
+                  onChange={(val) => onStatusChange(val as FilterStatus)}
                   label="Status"
                 />
-
                 <PillFilter
                   options={billingCycleOptions}
                   value={billingCycleFilter}
-                  onChange={val =>
-                    onBillingCycleChange(val as FilterBillingCycle)
-                  }
+                  onChange={(val) => onBillingCycleChange(val as FilterBillingCycle)}
                   label="Billing"
                 />
-
                 <PillFilter
                   options={categoryOptions}
                   value={categoryFilter}
-                  onChange={val =>
-                    onCategoryChange(val as FilterCategory)
-                  }
+                  onChange={(val) => onCategoryChange(val as FilterCategory)}
                   label="Category"
                 />
               </div>

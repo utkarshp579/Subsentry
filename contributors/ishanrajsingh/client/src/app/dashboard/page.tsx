@@ -202,7 +202,7 @@ export default function Dashboard() {
       subtitle="Overview of your subscriptions"
     >
       {/* Welcome Banner */}
-      <div className="mb-8 p-6 rounded-2xl bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-500/20 via-purple-500/10 to-transparent border border-blue-500/20 shadow-lg backdrop-blur-xl">
+      <div className="mb-6 p-6 rounded-2xl bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 border border-blue-500/20">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h2 className="text-xl font-semibold text-white mb-1">
@@ -223,7 +223,7 @@ export default function Dashboard() {
           </div>
           <Link
             href="/subscriptions"
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90 text-white rounded-xl shadow-md transition-all hover:scale-[1.03] active:scale-[0.98]"
+            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Subscription
@@ -236,7 +236,7 @@ export default function Dashboard() {
         <select
           value={displayCurrency}
           onChange={(e) => setDisplayCurrency(e.target.value)}
-          className="appearance-none px-4 py-2.5 text-sm rounded-xl border border-[#2a2a2a] bg-[#0b0b0b] text-gray-300 outline-none cursor-pointer hover:border-blue-500/40 hover:bg-[#121212] transition-all shadow-sm"
+          className="appearance-none px-3 py-2 text-sm rounded-lg border border-[#2a2a2a] bg-[#0f0f0f] text-gray-300 outline-none cursor-pointer hover:border-[#3a3a3a] transition-colors"
         >
           {CURRENCY_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
@@ -302,7 +302,7 @@ export default function Dashboard() {
                   <div
                     key={sub._id}
                     className={cn(
-                      'flex items-center gap-4 p-4 rounded-xl border transition-all duration-200 hover:bg-[#141414] hover:shadow-lg hover:-translate-y-[1px]',
+                      'flex items-center gap-4 p-4 rounded-xl border transition-colors hover:bg-[#141414]',
                       isUrgent
                         ? 'border-amber-500/30 bg-amber-500/5'
                         : 'border-[#1a1a1a]'
@@ -310,7 +310,7 @@ export default function Dashboard() {
                   >
                     <div
                       className={cn(
-                        'w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-md backdrop-blur-lg ring-1 ring-white/10',
+                        'w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0',
                         iconBg,
                         iconText
                       )}
@@ -377,14 +377,14 @@ export default function Dashboard() {
         {/* Quick Actions & Insights */}
         <div className="space-y-6">
           {/* Quick Actions */}
-          <div className="bg-[#0c0c0c] rounded-2xl border border-[#1a1a1a] p-6 shadow-lg">
+          <div className="bg-[#0f0f0f] rounded-xl border border-[#1a1a1a] p-6">
             <h3 className="text-lg font-semibold text-white mb-4">
               Quick Actions
             </h3>
             <div className="space-y-3">
               <Link
                 href="/subscriptions/new"
-                className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-br from-[#161616] to-[#0f0f0f] hover:from-[#1e1e1e] hover:to-[#141414] shadow-md hover:shadow-xl transition-all hover:-translate-y-[1px] transition-colors"
+                className="flex items-center gap-3 p-3 rounded-lg bg-[#1a1a1a] hover:bg-[#2a2a2a] transition-colors"
               >
                 <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
                   <Plus className="w-5 h-5 text-blue-400" />
@@ -414,7 +414,7 @@ export default function Dashboard() {
           </div>
 
           {/* Spending Insight */}
-          <div className="bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-500/20 via-purple-500/10 to-transparent rounded-2xl border border-blue-500/30 p-6 shadow-xl backdrop-blur-lg">
+          <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-xl border border-blue-500/20 p-6">
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp className="w-5 h-5 text-blue-400" />
               <h3 className="font-semibold text-white">Spending Insight</h3>

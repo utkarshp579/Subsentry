@@ -1,9 +1,12 @@
 'use client';
 
 import { CreditCard, Plus, Sparkles, BarChart3, Bell, Mail } from 'lucide-react';
-import Link from 'next/link';
 
-export default function EmptyState() {
+interface EmptyStateProps {
+  onAddClick?: () => void;
+}
+
+export default function EmptyState({ onAddClick }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4">
       {/* Animated Icon */}
@@ -28,12 +31,14 @@ export default function EmptyState() {
       </p>
 
       {/* CTA Button */}
-      <Link href="/subscriptions/new"
+      <button
+        onClick={onAddClick}
         className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-medium rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-blue-500/20"
       >
         <Plus className="w-5 h-5" />
         Add Your First Subscription
-      </Link>
+      </button>
+
       {/* Feature List */}
       <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-2xl">
         <div className="text-center">

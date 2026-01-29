@@ -1,35 +1,10 @@
+import { resolveVendor } from './vendorResolver.js';
+import { calculateConfidence } from './confidenceScorer.js';
+
 /**
  * Email Parser Service
  * Extracts subscription data from email metadata using rule-based parsing
- * 
- * Note: Accuracy is not expected to be perfect — users can edit later
  */
-
-// Common subscription service patterns
-const KNOWN_SERVICES = [
-    { pattern: /netflix/i, name: 'Netflix' },
-    { pattern: /spotify/i, name: 'Spotify' },
-    { pattern: /amazon\s*prime/i, name: 'Amazon Prime' },
-    { pattern: /disney\s*\+|disneyplus/i, name: 'Disney+' },
-    { pattern: /hbo\s*max|hbomax/i, name: 'HBO Max' },
-    { pattern: /youtube\s*(premium|music)/i, name: 'YouTube Premium' },
-    { pattern: /apple\s*(music|tv|one|arcade)/i, name: 'Apple' },
-    { pattern: /google\s*(one|workspace|play)/i, name: 'Google' },
-    { pattern: /microsoft\s*365|office\s*365/i, name: 'Microsoft 365' },
-    { pattern: /adobe/i, name: 'Adobe' },
-    { pattern: /dropbox/i, name: 'Dropbox' },
-    { pattern: /slack/i, name: 'Slack' },
-    { pattern: /zoom/i, name: 'Zoom' },
-    { pattern: /canva/i, name: 'Canva' },
-    { pattern: /notion/i, name: 'Notion' },
-    { pattern: /github/i, name: 'GitHub' },
-    { pattern: /linkedin/i, name: 'LinkedIn' },
-    { pattern: /grammarly/i, name: 'Grammarly' },
-    { pattern: /nordvpn|expressvpn|surfshark/i, name: 'VPN Service' },
-    { pattern: /playstation|ps\s*plus/i, name: 'PlayStation' },
-    { pattern: /xbox|game\s*pass/i, name: 'Xbox' },
-    { pattern: /nintendo/i, name: 'Nintendo' },
-];
 
 // Billing cycle patterns
 const BILLING_PATTERNS = {
@@ -61,40 +36,7 @@ const AMOUNT_PATTERNS = [
 ];
 
 /**
- * Extract service name from email sender and subject
- * @param {string} sender - Email sender (e.g., "Netflix <info@netflix.com>")
- * @param {string} subject - Email subject
- */
-const extractServiceName = (sender = '', subject = '') => {
-    const combined = `${sender} ${subject}`;
-
-    // Try known services first
-    for (const service of KNOWN_SERVICES) {
-        if (service.pattern.test(combined)) {
-            return service.name;
-        }
-    }
-
-    // Extract from email domain
-    const emailMatch = sender.match(/@([a-z0-9.-]+)\./i);
-    if (emailMatch) {
-        const domain = emailMatch[1];
-        // Capitalize first letter
-        return domain.charAt(0).toUpperCase() + domain.slice(1);
-    }
-
-    // Extract from sender name
-    const nameMatch = sender.match(/^([^<]+)/);
-    if (nameMatch) {
-        return nameMatch[1].trim();
-    }
-
-    return null;
-};
-
-/**
  * Detect billing cycle from email content
- * @param {string} text - Combined email text
  */
 const detectBillingCycle = (text = '') => {
     for (const [cycle, pattern] of Object.entries(BILLING_PATTERNS)) {
@@ -107,7 +49,6 @@ const detectBillingCycle = (text = '') => {
 
 /**
  * Detect transaction type from email content
- * @param {string} text - Combined email text
  */
 const detectTransactionType = (text = '') => {
     const types = [];
@@ -121,7 +62,6 @@ const detectTransactionType = (text = '') => {
 
 /**
  * Extract amount from email content
- * @param {string} text - Combined email text
  */
 const extractAmount = (text = '') => {
     for (const pattern of AMOUNT_PATTERNS) {
@@ -156,46 +96,60 @@ export const parseEmail = (email) => {
         // Combine all text for analysis
         const combinedText = `${subject} ${snippet}`;
 
-        // Extract data
-        const serviceName = extractServiceName(sender, subject);
+        // 1. Resolve Vendor
+        const vendorResolveResult = resolveVendor(sender, sender, subject);
+        const serviceName = vendorResolveResult ? vendorResolveResult.name : null;
+
+        // 2. Extract Data
         const billingCycle = detectBillingCycle(combinedText);
         const transactionTypes = detectTransactionType(combinedText);
         const amountData = extractAmount(combinedText);
 
+        // 3. Calculate Confidence
+        const confidenceResult = calculateConfidence({
+            vendorMatch: vendorResolveResult,
+            amount: amountData?.amount,
+            billingCycle,
+            transactionTypes,
+            renewalDate: timestamp ? new Date(timestamp) : null,
+            originalSubject: subject
+        });
+
         return {
             messageId,
             parsed: true,
-            serviceName,
-            billingCycle,
-            transactionTypes,
-            amount: amountData?.amount || null,
-            currency: amountData?.currency || null,
+
+            // Core Identity
+            vendorName: serviceName,
+            rawVendor: sender,
+            vendorIcon: vendorResolveResult?.icon || 'default',
+
+            // Confidence
+            confidenceScore: confidenceResult.score,
+            signals: confidenceResult.signals,
+
+            // Extracted Info
+            extractedData: {
+                billingCycle: billingCycle || 'monthly', // Default to monthly if unknown but high confidence
+                amount: amountData?.amount || null,
+                currency: amountData?.currency || null,
+                transactionTypes,
+                renewalDate: timestamp ? new Date(timestamp) : new Date(),
+            },
+
+            // Metadata
             originalSubject: subject,
             originalSender: sender,
-            timestamp,
-            confidence: calculateConfidence({ serviceName, billingCycle, amountData }),
+            emailTimestamp: timestamp,
         };
     } catch (error) {
-        // Never crash - return partial data
+        console.error('Error parsing email:', error);
         return {
             messageId: email?.messageId,
             parsed: false,
-            error: 'Failed to parse email',
-            originalSubject: email?.subject,
-            originalSender: email?.sender,
+            error: 'Failed to parse email'
         };
     }
-};
-
-/**
- * Calculate confidence score based on extracted data
- */
-const calculateConfidence = ({ serviceName, billingCycle, amountData }) => {
-    let score = 0;
-    if (serviceName) score += 40;
-    if (billingCycle) score += 30;
-    if (amountData) score += 30;
-    return score;
 };
 
 /**
@@ -207,15 +161,16 @@ export const parseEmails = (emails = []) => {
 };
 
 /**
- * Parse and group by service
- * @param {Array} emails - Array of email objects
+ * Parse and group by service (Legacy support / for direct view)
  */
 export const parseAndGroupByService = (emails = []) => {
     const parsed = parseEmails(emails);
     const grouped = {};
 
     for (const email of parsed) {
-        const key = email.serviceName || 'Unknown';
+        if (!email.vendorName || email.confidenceScore < 30) continue;
+
+        const key = email.vendorName;
         if (!grouped[key]) {
             grouped[key] = [];
         }
@@ -225,4 +180,5 @@ export const parseAndGroupByService = (emails = []) => {
     return grouped;
 };
 
-export { KNOWN_SERVICES, BILLING_PATTERNS, TRANSACTION_PATTERNS };
+export { BILLING_PATTERNS, TRANSACTION_PATTERNS };
+
