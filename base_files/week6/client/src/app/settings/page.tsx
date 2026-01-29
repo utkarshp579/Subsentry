@@ -22,6 +22,21 @@ type EmailPreview = {
   snippet?: string;
 };
 
+type AlertRules = {
+  daysBefore: number;
+  channels: string[];
+  enabled: boolean;
+  isDefault?: boolean;
+};
+
+type UpcomingRenewal = {
+  _id: string;
+  name: string;
+  renewalDate: string;
+  amount: number;
+  currency?: string;
+};
+
 export default function SettingsPage() {
   const { getToken } = useAuth();
   const [gmailNotice, setGmailNotice] = useState<{
@@ -37,8 +52,12 @@ export default function SettingsPage() {
     skipped: number;
     errors: number;
   } | null>(null);
+  const [alertRules, setAlertRules] = useState<AlertRules | null>(null);
+  const [upcomingAlerts, setUpcomingAlerts] = useState<UpcomingRenewal[]>([]);
+  const [alertsMessage, setAlertsMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [alertsBusy, setAlertsBusy] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -115,6 +134,115 @@ export default function SettingsPage() {
   useEffect(() => {
     fetchStatus();
   }, [getToken]);
+
+  const fetchAlertRules = async () => {
+    setAlertsMessage(null);
+    setAlertsBusy('rules');
+    try {
+      const token = await getToken?.();
+      if (!token) {
+        throw new Error('Sign in to load alert rules.');
+      }
+
+      const res = await fetch(`${API_BASE_URL}/api/alerts/rules`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.message || 'Failed to fetch alert rules');
+      }
+
+      setAlertRules({
+        daysBefore: data.daysBefore ?? 3,
+        channels: data.channels ?? ['email'],
+        enabled: data.enabled ?? true,
+        isDefault: data.isDefault,
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Failed to fetch alert rules';
+      setAlertsMessage(message);
+    } finally {
+      setAlertsBusy(null);
+    }
+  };
+
+  useEffect(() => {
+    fetchAlertRules();
+  }, [getToken]);
+
+  const updateAlertRules = async () => {
+    setAlertsMessage(null);
+    setAlertsBusy('save');
+    try {
+      const token = await getToken?.();
+      if (!token) {
+        throw new Error('Sign in to update alert rules.');
+      }
+
+      const payload = {
+        daysBefore: alertRules?.daysBefore ?? 3,
+        channels: alertRules?.channels ?? ['email'],
+        enabled: alertRules?.enabled ?? true,
+      };
+
+      const res = await fetch(`${API_BASE_URL}/api/alerts/rules`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.message || 'Failed to update alert rules');
+      }
+
+      setAlertRules({
+        daysBefore: data.daysBefore ?? 3,
+        channels: data.channels ?? ['email'],
+        enabled: data.enabled ?? true,
+      });
+      setAlertsMessage('Alert rules updated successfully.');
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Failed to update alert rules';
+      setAlertsMessage(message);
+    } finally {
+      setAlertsBusy(null);
+    }
+  };
+
+  const fetchUpcomingAlerts = async () => {
+    setAlertsMessage(null);
+    setAlertsBusy('upcoming');
+    try {
+      const token = await getToken?.();
+      if (!token) {
+        throw new Error('Sign in to fetch upcoming renewals.');
+      }
+
+      const res = await fetch(`${API_BASE_URL}/api/alerts/upcoming`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.message || 'Failed to fetch upcoming renewals');
+      }
+
+      setUpcomingAlerts(Array.isArray(data.subscriptions) ? data.subscriptions : []);
+      if (data?.message) {
+        setAlertsMessage(data.message);
+      }
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Failed to fetch upcoming renewals';
+      setAlertsMessage(message);
+    } finally {
+      setAlertsBusy(null);
+    }
+  };
 
   const connectGmail = async () => {
     setError(null);
@@ -401,6 +529,103 @@ export default function SettingsPage() {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-[#0b0f14] p-5">
+          <h2 className="text-lg font-semibold text-white">
+            Renewal Alert Rules
+          </h2>
+          <p className="text-sm text-gray-400 mt-1">
+            Control how early you want to be notified about renewals.
+          </p>
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <label className="text-sm text-gray-300">Window</label>
+            <select
+              value={alertRules?.daysBefore ?? 3}
+              onChange={(e) =>
+                setAlertRules((prev) => ({
+                  daysBefore: Number(e.target.value),
+                  channels: prev?.channels ?? ['email'],
+                  enabled: prev?.enabled ?? true,
+                }))
+              }
+              className="px-3 py-2 rounded-lg border border-white/10 bg-[#0f1319] text-sm text-white"
+            >
+              {[3, 7, 14, 21, 30].map((day) => (
+                <option key={day} value={day}>
+                  {day} days
+                </option>
+              ))}
+            </select>
+
+            <label className="text-sm text-gray-300 ml-2">Enabled</label>
+            <input
+              type="checkbox"
+              checked={alertRules?.enabled ?? true}
+              onChange={(e) =>
+                setAlertRules((prev) => ({
+                  daysBefore: prev?.daysBefore ?? 3,
+                  channels: prev?.channels ?? ['email'],
+                  enabled: e.target.checked,
+                }))
+              }
+              className="accent-emerald-400 h-4 w-4"
+            />
+
+            <button
+              onClick={updateAlertRules}
+              disabled={alertsBusy === 'save'}
+              className="px-4 py-2 rounded-lg bg-white text-black text-sm font-semibold disabled:opacity-60"
+            >
+              {alertsBusy === 'save' ? 'Saving...' : 'Save Rules'}
+            </button>
+            <button
+              onClick={fetchUpcomingAlerts}
+              disabled={alertsBusy === 'upcoming'}
+              className="px-4 py-2 rounded-lg border border-white/20 text-white text-sm disabled:opacity-50"
+            >
+              {alertsBusy === 'upcoming' ? 'Checking...' : 'Check Upcoming'}
+            </button>
+            <button
+              onClick={fetchAlertRules}
+              disabled={alertsBusy === 'rules'}
+              className="px-3 py-2 rounded-lg border border-white/20 text-white text-sm disabled:opacity-50"
+            >
+              Refresh Rules
+            </button>
+          </div>
+
+          {alertsMessage && (
+            <div className="mt-3 text-sm text-amber-200">
+              {alertsMessage}
+            </div>
+          )}
+
+          <div className="mt-4 text-sm text-gray-400">
+            Upcoming renewals: {upcomingAlerts.length}
+          </div>
+
+          {upcomingAlerts.length > 0 && (
+            <div className="mt-3 space-y-2">
+              {upcomingAlerts.slice(0, 6).map((sub) => (
+                <div
+                  key={sub._id}
+                  className="flex items-center justify-between rounded-lg border border-white/10 bg-[#0f1319] px-4 py-2 text-sm text-gray-300"
+                >
+                  <div className="min-w-0">
+                    <div className="truncate text-white">{sub.name}</div>
+                    <div className="text-xs text-gray-500">
+                      {new Date(sub.renewalDate).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div className="text-sm text-gray-200">
+                    {sub.currency ? sub.currency : 'USD'} {sub.amount?.toFixed(2)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {emails.length > 0 && (

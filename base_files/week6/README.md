@@ -31,7 +31,8 @@ Backend (Week 6)
 - [x] Alerts rule endpoints + upcoming renewals
 
 Frontend (Week 6)
-- [ ] No UI changes required (backend-only week)
+- [x] Dashboard reads `/api/analytics/overview` for summary widgets
+- [x] Settings page provides Alert Rules controls + Upcoming preview
 
 ## Credits (Merged PRs)
 
@@ -79,4 +80,4 @@ npm run dev
 > Tip: copy `base_files/week6/server/envExample` to `.env` and fill Google OAuth values before starting the server.
 
 ## Notes
-- Week 6 is backend-heavy; UI changes should remain scoped to contributors folders only.
+- Week 6 is backend-heavy; UI additions are limited to analytics + alert rule controls.

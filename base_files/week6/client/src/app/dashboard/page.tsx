@@ -129,6 +129,12 @@ export default function Dashboard() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [displayCurrency, setDisplayCurrency] = useState('USD');
+  const [analytics, setAnalytics] = useState<{
+    monthlySpend?: number;
+    yearlySpend?: number;
+    activeCount?: number;
+    trialCount?: number;
+  } | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -140,16 +146,22 @@ export default function Dashboard() {
           headers.Authorization = `Bearer ${token}`;
         }
 
-        const res = await fetch(`${API_BASE_URL}/api/subscriptions`, {
-          headers,
-        });
+        const [subscriptionsRes, analyticsRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/subscriptions`, { headers }),
+          fetch(`${API_BASE_URL}/api/analytics/overview`, { headers }),
+        ]);
 
-        if (!res.ok) {
-          throw new Error(`API error: ${res.status}`);
+        if (!subscriptionsRes.ok) {
+          throw new Error(`API error: ${subscriptionsRes.status}`);
         }
 
-        const data = await res.json();
+        const data = await subscriptionsRes.json();
         setSubscriptions(Array.isArray(data.data) ? data.data : []);
+
+        if (analyticsRes.ok) {
+          const analyticsPayload = await analyticsRes.json();
+          setAnalytics(analyticsPayload?.overview ?? null);
+        }
       } catch (err) {
         console.error('Failed to fetch subscriptions', err);
       } finally {
@@ -245,7 +257,11 @@ export default function Dashboard() {
           ))}
         </select>
       </div>
-      <SummaryWidgets subscriptions={subscriptions} displayCurrency={displayCurrency} />
+      <SummaryWidgets
+        subscriptions={subscriptions}
+        displayCurrency={displayCurrency}
+        analytics={analytics ?? undefined}
+      />
 
       {/* Upcoming Renewals Section */}
       <UpcomingRenewals

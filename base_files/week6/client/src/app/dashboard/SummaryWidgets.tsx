@@ -16,7 +16,13 @@ interface Subscription {
 interface SummaryWidgetsProps {
   subscriptions: Subscription[];
   displayCurrency: string;
-};
+  analytics?: {
+    monthlySpend?: number;
+    yearlySpend?: number;
+    activeCount?: number;
+    trialCount?: number;
+  };
+}
 
 // CountUp hook
 function useCountUp(target: number, duration = 1000) {
@@ -44,7 +50,7 @@ function useCountUp(target: number, duration = 1000) {
   return value;
 }
 
-const SummaryWidgets = ({ subscriptions, displayCurrency }: SummaryWidgetsProps) => {
+const SummaryWidgets = ({ subscriptions, displayCurrency, analytics }: SummaryWidgetsProps) => {
   const metrics = useMemo(() => {
     const activeSubscriptions = subscriptions.filter((s) => s.status === 'active');
     const monthlySpend = activeSubscriptions.reduce((sum, sub) => {
@@ -66,10 +72,19 @@ const SummaryWidgets = ({ subscriptions, displayCurrency }: SummaryWidgetsProps)
     return { monthlySpend, yearlySpend, activeCount, trialCount };
   }, [subscriptions, displayCurrency]);
 
-  const animatedMonthly = useCountUp(Math.round(metrics.monthlySpend));
-  const animatedYearly = useCountUp(Math.round(metrics.yearlySpend));
-  const animatedActive = useCountUp(metrics.activeCount);
-  const animatedTrial = useCountUp(metrics.trialCount);
+  const monthlySpend = analytics?.monthlySpend !== undefined
+    ? convertCurrency(analytics.monthlySpend, 'USD', displayCurrency)
+    : metrics.monthlySpend;
+  const yearlySpend = analytics?.yearlySpend !== undefined
+    ? convertCurrency(analytics.yearlySpend, 'USD', displayCurrency)
+    : metrics.yearlySpend;
+  const activeCount = analytics?.activeCount ?? metrics.activeCount;
+  const trialCount = analytics?.trialCount ?? metrics.trialCount;
+
+  const animatedMonthly = useCountUp(Math.round(monthlySpend));
+  const animatedYearly = useCountUp(Math.round(yearlySpend));
+  const animatedActive = useCountUp(activeCount);
+  const animatedTrial = useCountUp(trialCount);
 
   const widgetData = [
     {
