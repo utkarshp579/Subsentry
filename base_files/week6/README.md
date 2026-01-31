@@ -33,6 +33,9 @@ Backend (Week 6)
 Frontend (Week 6)
 - [x] Dashboard reads `/api/analytics/overview` for summary widgets
 - [x] Settings page provides Alert Rules controls + Upcoming preview
+- [x] Analytics page shows spend trends + category breakdown
+- [x] Renewals page shows upcoming renewals window from `/api/alerts/upcoming`
+- [x] Profile page shows Clerk account summary
 
 ## Credits (Merged PRs)
 
@@ -80,4 +83,5 @@ npm run dev
 > Tip: copy `base_files/week6/server/envExample` to `.env` and fill Google OAuth values before starting the server.
 
 ## Notes
-- Week 6 is backend-heavy; UI additions are limited to analytics + alert rule controls.
+- Week 6 is backend-heavy; UI additions include analytics, renewals, and profile views.
+- Maintainer enhancement: completed Week 6 UI pages and aligned visuals with the new analytics/alerts APIs.

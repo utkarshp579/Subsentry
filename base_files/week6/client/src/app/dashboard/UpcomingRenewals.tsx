@@ -42,7 +42,7 @@ const UpcomingRenewals: React.FC<UpcomingRenewalsProps> = ({
 
   if (upcoming.length === 0) {
     return (
-      <Card className="p-8 rounded-2xl bg-linear-to-br from-[#18181c] to-[#101010] border border-[#232323] text-center shadow-lg">
+      <Card className="p-8 rounded-2xl bg-gradient-to-br from-[#18181c] to-[#101010] border border-[#232323] text-center shadow-lg">
         <span className="text-gray-400 text-base">
           No upcoming renewals in the next 30 days.
         </span>
@@ -68,10 +68,10 @@ const UpcomingRenewals: React.FC<UpcomingRenewalsProps> = ({
               className={`flex items-center gap-6 p-6 rounded-2xl border shadow-lg transition-colors duration-200
                 ${
                   urgency === 'urgent'
-                    ? 'border-amber-500/60 bg-linear-to-br from-amber-500/10 to-[#18181c]'
+                    ? 'border-amber-500/60 bg-gradient-to-br from-amber-500/10 to-[#18181c]'
                     : urgency === 'soon'
-                      ? 'border-blue-500/30 bg-linear-to-br from-blue-500/10 to-[#18181c]'
-                      : 'border-[#232323] bg-linear-to-br from-[#18181c] to-[#101010]'
+                      ? 'border-blue-500/30 bg-gradient-to-br from-blue-500/10 to-[#18181c]'
+                      : 'border-[#232323] bg-gradient-to-br from-[#18181c] to-[#101010]'
                 }
               `}
             >
