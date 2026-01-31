@@ -5,6 +5,7 @@ const {
   getStoredTokens,
   fetchTransactionalEmails,
 } = require("../services/gmailService");
+const subscriptionCandidateService = require("../services/subscriptionCandidateService");
 
 const getAuthUrl = async (req, res) => {
   try {
@@ -135,9 +136,68 @@ const getTransactionalEmails = async (req, res) => {
   }
 };
 
+const getTransactionalEmailsWithCandidates = async (req, res) => {
+  try {
+    const { userId, q, limit, pageToken, minConfidence } = req.query;
+    const maxResults = limit ? Number(limit) : 25;
+
+    if (Number.isNaN(maxResults) || maxResults <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Limit must be a positive number.",
+      });
+    }
+
+    // Step 1: Fetch emails from Gmail
+    const emailResult = await fetchTransactionalEmails({
+      userId: userId || "default",
+      query: q,
+      maxResults,
+      pageToken,
+    });
+
+    // Step 2: Process emails into subscription candidates
+    const candidates = await subscriptionCandidateService.processEmailCandidates(
+      emailResult.emails,
+      userId || "default"
+    );
+
+    // Step 3: Filter by minimum confidence if specified
+    const filteredCandidates = minConfidence 
+      ? candidates.filter(c => c.confidence >= Number(minConfidence))
+      : candidates;
+
+    // Step 4: Save candidates to database
+    const saveResults = await subscriptionCandidateService.saveCandidates(filteredCandidates);
+
+    return res.status(200).json({
+      success: true,
+      message: `Processed ${emailResult.emails.length} emails, created ${saveResults.saved} subscription candidates.`,
+      data: {
+        emails: emailResult,
+        candidates: filteredCandidates,
+        processed: emailResult.emails.length,
+        ...saveResults,
+      },
+    });
+  } catch (error) {
+    const statusCode =
+      error.code || error.status || error.response?.status || 500;
+    const isRateLimit = statusCode === 429;
+
+    return res.status(statusCode).json({
+      success: false,
+      message: isRateLimit
+        ? "Gmail API rate limit exceeded. Please retry later."
+        : error.message || "Failed to fetch and process emails.",
+    });
+  }
+};
+
 module.exports = {
   getAuthUrl,
   handleCallback,
   getStatus,
   getTransactionalEmails,
+  getTransactionalEmailsWithCandidates,
 };

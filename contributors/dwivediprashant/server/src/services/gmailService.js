@@ -165,96 +165,100 @@ const refreshAccessTokenIfNeeded = async (userId) => {
     };
   }
 
-  const getHeaderValue = (headers, name) => {
-    if (!headers || !Array.isArray(headers)) {
-      return null;
-    }
-    const header = headers.find(
-      (item) => item.name && item.name.toLowerCase() === name.toLowerCase(),
-    );
-    return header ? header.value : null;
+  return {
+    connected: true,
+    scope: updated.scope,
+    expiryDate: updated.expiry_date,
   };
+};
 
-  const fetchTransactionalEmails = async ({
-    userId,
-    query,
-    maxResults,
+const getHeaderValue = (headers, name) => {
+  if (!headers || !Array.isArray(headers)) {
+    return null;
+  }
+  const header = headers.find(
+    (item) => item.name && item.name.toLowerCase() === name.toLowerCase(),
+  );
+  return header ? header.value : null;
+};
+
+const fetchTransactionalEmails = async ({
+  userId,
+  query,
+  maxResults,
+  pageToken,
+}) => {
+  const refreshed = await refreshAccessTokenIfNeeded(userId);
+  if (!refreshed) {
+    const error = new Error("No Gmail connection found.");
+    error.code = 404;
+    throw error;
+  }
+
+  const authClient = await getAuthorizedClient(userId);
+  if (!authClient) {
+    const error = new Error("No Gmail connection found.");
+    error.code = 404;
+    throw error;
+  }
+
+  const gmail = google.gmail({ version: "v1", auth: authClient });
+
+  const safeMaxResults = Math.min(Math.max(maxResults || 10, 1), 50);
+  const q = query && query.trim().length > 0 ? query : DEFAULT_QUERY;
+
+  const listResponse = await gmail.users.messages.list({
+    userId: "me",
+    q,
+    maxResults: safeMaxResults,
     pageToken,
-  }) => {
-    const refreshed = await refreshAccessTokenIfNeeded(userId);
-    if (!refreshed) {
-      const error = new Error("No Gmail connection found.");
-      error.code = 404;
-      throw error;
-    }
+  });
 
-    const authClient = await getAuthorizedClient(userId);
-    if (!authClient) {
-      const error = new Error("No Gmail connection found.");
-      error.code = 404;
-      throw error;
-    }
-
-    const gmail = google.gmail({ version: "v1", auth: authClient });
-
-    const safeMaxResults = Math.min(Math.max(maxResults || 10, 1), 50);
-    const q = query && query.trim().length > 0 ? query : DEFAULT_QUERY;
-
-    const listResponse = await gmail.users.messages.list({
-      userId: "me",
-      q,
-      maxResults: safeMaxResults,
-      pageToken,
-    });
-
-    const messages = listResponse.data.messages || [];
-    if (messages.length === 0) {
-      return {
-        emails: [],
-        nextPageToken: listResponse.data.nextPageToken || null,
-        resultSizeEstimate: listResponse.data.resultSizeEstimate || 0,
-        query: q,
-      };
-    }
-
-    const emailDetails = await Promise.all(
-      messages.map(async (message) => {
-        const detail = await gmail.users.messages.get({
-          userId: "me",
-          id: message.id,
-          format: "metadata",
-          metadataHeaders: METADATA_HEADERS,
-        });
-
-        const headers = detail.data.payload?.headers || [];
-
-        return {
-          id: detail.data.id,
-          threadId: detail.data.threadId,
-          subject: getHeaderValue(headers, "Subject"),
-          sender: getHeaderValue(headers, "From"),
-          timestamp: detail.data.internalDate
-            ? Number(detail.data.internalDate)
-            : null,
-        };
-      }),
-    );
-
+  const messages = listResponse.data.messages || [];
+  if (messages.length === 0) {
     return {
-      emails: emailDetails,
+      emails: [],
       nextPageToken: listResponse.data.nextPageToken || null,
       resultSizeEstimate: listResponse.data.resultSizeEstimate || 0,
       query: q,
     };
+  }
+
+  const emailDetails = await Promise.all(
+    messages.map(async (message) => {
+      const detail = await gmail.users.messages.get({
+        userId: "me",
+        id: message.id,
+        format: "metadata",
+        metadataHeaders: METADATA_HEADERS,
+      });
+
+      const headers = detail.data.payload?.headers || [];
+
+      return {
+        id: detail.data.id,
+        threadId: detail.data.threadId,
+        subject: getHeaderValue(headers, "Subject"),
+        sender: getHeaderValue(headers, "From"),
+        timestamp: detail.data.internalDate
+          ? Number(detail.data.internalDate)
+          : null,
+      };
+    }),
+  );
+
+  return {
+    emails: emailDetails,
+    nextPageToken: listResponse.data.nextPageToken || null,
+    resultSizeEstimate: listResponse.data.resultSizeEstimate || 0,
+    query: q,
   };
+};
 
   module.exports = {
-    generateAuthUrl,
-    exchangeCodeForTokens,
-    refreshAccessTokenIfNeeded,
-    getStoredTokens,
-    fetchTransactionalEmails,
-    // Add missing closing brace for fetchTransactionalEmails
-  };
-  // End of file
+  generateAuthUrl,
+  exchangeCodeForTokens,
+  refreshAccessTokenIfNeeded,
+  getStoredTokens,
+  fetchTransactionalEmails,
 };
