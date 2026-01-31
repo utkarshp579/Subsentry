@@ -38,9 +38,9 @@ Frontend (Week 6)
 
 | Issue | Focus Area | Contributors (PRs) |
 | ----: | ---------- | ------------------ |
-| **24** | Vendor Resolver + Confidence | Krishna200608 (**#279**) |
-| **25** | Analytics Engine | Krishna200608 (**#280**) |
-| **26** | Renewal Alerts API | Krishna200608 (**#281**) |
+| **24** | Vendor Resolver + Confidence | Krishna200608 (**#279**), dwivediprashant (**#288**), ishanrajsingh (**#283**) |
+| **25** | Analytics Engine | Krishna200608 (**#280**), dwivediprashant (**#287**) |
+| **26** | Renewal Alerts API | Krishna200608 (**#281**), dwivediprashant (**#286**), Chithra582 (**#285**), ishanrajsingh (**#284**) |
 
 ## Structure
 
