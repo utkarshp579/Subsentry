@@ -4,6 +4,7 @@ const app = express();
 const connectDB = require("./config/db");
 const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const gmailRoutes = require("./routes/gmailRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
 const port = process.env.PORT || 5000;
 
 //db connection establish
@@ -17,6 +18,7 @@ app.use(express.json());
 //--subscription routes :----------
 app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/gmail", gmailRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 // //--root route :----------
 // app.get("/", (req, res) => {
