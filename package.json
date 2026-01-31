@@ -1,0 +1,27 @@
+{
+  "name": "subsentry",
+  "version": "1.0.0",
+  "description": "**Stop silent money leaks. Own your subscriptions.**",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Chithra582/Subsentry.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Chithra582/Subsentry/issues"
+  },
+  "homepage": "https://github.com/Chithra582/Subsentry#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "lucide-react": "^0.562.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}
